@@ -1,5 +1,4 @@
 from custom_crew import Agent
-import os
 
 def criar_analista_financeiro() -> Agent:
     return Agent(

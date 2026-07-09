@@ -34,7 +34,7 @@ def test_tasks_instantiation():
     assert isinstance(tarefa_dir, Task)
     assert tarefa_dir.agent == analista
 
-def test_crew_kickoff(monkeypatch):
+def test_crew_kickoff():
     from custom_crew import Crew
     
     agent_calls = []

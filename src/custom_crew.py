@@ -25,7 +25,11 @@ class Agent:
         if self.verbose:
             print(f"\n[Agent: {self.role}] Starting task...")
 
-        if os.getenv("GEMINI_API_KEY"):
+        gemini_failed = False
+        gemini_error = None
+        gemini_key_present = bool(os.getenv("GEMINI_API_KEY"))
+        
+        if gemini_key_present:
             try:
                 from google import genai
                 client = genai.Client()
@@ -38,9 +42,15 @@ class Agent:
                     print(f"[Agent: {self.role}] Completed task using Gemini.")
                 return response.text
             except Exception as e:
-                warnings.warn(f"Gemini API call failed: {e}. Trying OpenAI...")
+                gemini_failed = True
+                gemini_error = e
+                warnings.warn(f"Gemini API call failed: {e}. Trying OpenAI if available...")
 
-        if os.getenv("OPENAI_API_KEY"):
+        openai_failed = False
+        openai_error = None
+        openai_key_present = bool(os.getenv("OPENAI_API_KEY"))
+
+        if openai_key_present:
             try:
                 from openai import OpenAI
                 client = OpenAI()
@@ -55,9 +65,19 @@ class Agent:
                     print(f"[Agent: {self.role}] Completed task using OpenAI.")
                 return response.choices[0].message.content
             except Exception as e:
-                raise RuntimeError(f"OpenAI API call failed: {e}")
+                openai_failed = True
+                openai_error = e
 
-        raise RuntimeError("No API keys found. Please set GEMINI_API_KEY or OPENAI_API_KEY.")
+        if not gemini_key_present and not openai_key_present:
+            raise RuntimeError("No API keys found. Please set GEMINI_API_KEY or OPENAI_API_KEY.")
+            
+        errors = []
+        if gemini_key_present and gemini_failed:
+            errors.append(f"Gemini failed: {gemini_error}")
+        if openai_key_present and openai_failed:
+            errors.append(f"OpenAI failed: {openai_error}")
+            
+        raise RuntimeError("API execution failed. Details: " + " | ".join(errors))
 
 class Task:
     def __init__(self, description: str, expected_output: str, agent: Agent):

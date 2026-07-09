@@ -1,7 +1,16 @@
 import pandas as pd
 import warnings
 
+def validar_colunas_csv(caminho_csv: str, colunas_esperadas: list):
+    df = pd.read_csv(caminho_csv, nrows=0)
+    colunas_presentes = set(df.columns)
+    colunas_faltantes = [col for col in colunas_esperadas if col not in colunas_presentes]
+    if colunas_faltantes:
+        raise ValueError(f"O arquivo '{caminho_csv}' esta incompleto. Colunas ausentes: {colunas_faltantes}")
+
 def calcular_margem_contribuicao(caminho_csv: str) -> pd.DataFrame:
+    validar_colunas_csv(caminho_csv, ["produto_id", "preco_venda_unitario", "custo_variavel_unitario", "despesas_variaveis_unit", "volume_vendas_mensal"])
+    
     df = pd.read_csv(caminho_csv)
     
     cols = ["preco_venda_unitario", "custo_variavel_unitario", "despesas_variaveis_unit", "volume_vendas_mensal"]
@@ -28,9 +37,11 @@ def calcular_margem_contribuicao(caminho_csv: str) -> pd.DataFrame:
 
 
 def calcular_ponto_equilibrio(caminho_csv: str, custos_fixos: float) -> dict:
+    validar_colunas_csv(caminho_csv, ["produto_id", "preco_venda_unitario", "custo_variavel_unitario", "despesas_variaveis_unit", "volume_vendas_mensal"])
+    
     df = calcular_margem_contribuicao(caminho_csv)
     
-    # Ponto de equilíbrio usando margem de contribuição média ponderada baseada no faturamento
+    # Ponto de equilíbrio usando margem de contribução média ponderada baseada no faturamento
     df["faturamento_total"] = df["preco_venda_unitario"] * df["volume_vendas_mensal"]
     faturamento_total_carteira = df["faturamento_total"].sum()
     
@@ -50,19 +61,22 @@ def calcular_ponto_equilibrio(caminho_csv: str, custos_fixos: float) -> dict:
 
 
 def calcular_custeio_absorcao(caminho_fin: str, caminho_op: str, custos_fixos: float, criterio: str) -> pd.DataFrame:
+    validar_colunas_csv(caminho_fin, ["produto_id", "preco_venda_unitario", "custo_variavel_unitario", "despesas_variaveis_unit"])
+    validar_colunas_csv(caminho_op, ["produto_id", "quantidade_produzida", "horas_maquina_ativas"])
+    
     fin_df = pd.read_csv(caminho_fin)
     op_df = pd.read_csv(caminho_op)
     
     # Consolidar produções por produto
     producao_total = op_df.groupby("produto_id")["quantidade_produzida"].sum().reset_index()
-    horas_maquina = op_df.groupby("produto_id")["horas_maquina_parada"].sum().reset_index() # para horas de máquina
+    horas_maquina = op_df.groupby("produto_id")["horas_maquina_ativas"].sum().reset_index() # para horas de máquina
     
     df = pd.merge(fin_df, producao_total, on="produto_id", how="left").fillna(0)
     df = pd.merge(df, horas_maquina, on="produto_id", how="left").fillna(0)
     
     total_produzido_todos = df["quantidade_produzida"].sum()
     total_custo_direto_carteira = (df["custo_variavel_unitario"] * df["quantidade_produzida"]).sum()
-    total_horas_maquina = df["horas_maquina_parada"].sum()
+    total_horas_maquina = df["horas_maquina_ativas"].sum()
     
     # Cálculo do fator de rateio
     if criterio == "volume":
@@ -74,7 +88,7 @@ def calcular_custeio_absorcao(caminho_fin: str, caminho_op: str, custos_fixos: f
         if total_horas_maquina == 0:
             df["rateio_custo_fixo"] = 0.0
         else:
-            df["rateio_custo_fixo"] = (df["horas_maquina_parada"] / total_horas_maquina) * custos_fixos
+            df["rateio_custo_fixo"] = (df["horas_maquina_ativas"] / total_horas_maquina) * custos_fixos
     elif criterio == "custo_direto":
         df["custo_direto_total"] = df["custo_variavel_unitario"] * df["quantidade_produzida"]
         if total_custo_direto_carteira == 0:
@@ -98,6 +112,9 @@ def calcular_custeio_absorcao(caminho_fin: str, caminho_op: str, custos_fixos: f
 
 
 def analisar_desperdicios_eficiencia(caminho_op: str, caminho_fin: str) -> pd.DataFrame:
+    validar_colunas_csv(caminho_op, ["lote_id", "produto_id", "quantidade_produzida", "quantidade_refugada", "horas_maquina_parada", "custo_hora_maquina"])
+    validar_colunas_csv(caminho_fin, ["produto_id", "custo_variavel_unitario"])
+    
     op_df = pd.read_csv(caminho_op)
     fin_df = pd.read_csv(caminho_fin)
     
@@ -120,4 +137,3 @@ def analisar_desperdicios_eficiencia(caminho_op: str, caminho_fin: str) -> pd.Da
     )
     
     return df
-

@@ -47,7 +47,7 @@ def montar_equipe_analise(caminho_fin: str, caminho_op: str, custos_fixos: float
     output_financeiro += "### 1. Rateio por Volume:\n"
     output_financeiro += df_to_markdown(abs_vol[["produto_id", "custo_absorcao_unitario", "lucro_unitario_absorcao"]])
     output_financeiro += "\n### 2. Rateio por Horas Maquina:\n"
-    output_financeiro += df_to_markdown(abs_horas[["produto_id", "custo_absorcao_unitario", "lucro_unitario_absorcao"]])
+    output_financeiro += df_to_markdown(abs_horas[["produto_id", "horas_maquina_ativas", "custo_absorcao_unitario", "lucro_unitario_absorcao"]])
     output_financeiro += "\n### 3. Rateio por Custo Direto:\n"
     output_financeiro += df_to_markdown(abs_custo_direto[["produto_id", "custo_absorcao_unitario", "lucro_unitario_absorcao"]])
     

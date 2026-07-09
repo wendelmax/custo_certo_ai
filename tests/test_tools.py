@@ -155,25 +155,25 @@ def test_calcular_custeio_absorcao():
         "horas_maquina"
     )
     prod_1_hm = df_hm[df_hm["produto_id"] == "PROD-001"].iloc[0]
-    assert prod_1_hm["rateio_custo_fixo"] == pytest.approx(3840.00)
-    assert prod_1_hm["custo_fixo_unitario"] == pytest.approx(3.84)
-    assert prod_1_hm["custo_absorcao_unitario"] == pytest.approx(88.84)
-    assert prod_1_hm["lucro_unitario_absorcao"] == pytest.approx(61.16)
-    assert prod_1_hm["lucro_total_absorcao"] == pytest.approx(61160.00)
+    assert prod_1_hm["rateio_custo_fixo"] == pytest.approx(3692.3076923076924)
+    assert prod_1_hm["custo_fixo_unitario"] == pytest.approx(3.6923076923076925)
+    assert prod_1_hm["custo_absorcao_unitario"] == pytest.approx(88.6923076923077)
+    assert prod_1_hm["lucro_unitario_absorcao"] == pytest.approx(61.3076923076923)
+    assert prod_1_hm["lucro_total_absorcao"] == pytest.approx(61307.6923076923)
 
     prod_2_hm = df_hm[df_hm["produto_id"] == "PROD-002"].iloc[0]
-    assert prod_2_hm["rateio_custo_fixo"] == pytest.approx(2400.00)
-    assert prod_2_hm["custo_fixo_unitario"] == pytest.approx(1.60)
-    assert prod_2_hm["custo_absorcao_unitario"] == pytest.approx(54.60)
-    assert prod_2_hm["lucro_unitario_absorcao"] == pytest.approx(25.40)
-    assert prod_2_hm["lucro_total_absorcao"] == pytest.approx(38100.00)
+    assert prod_2_hm["rateio_custo_fixo"] == pytest.approx(5538.461538461538)
+    assert prod_2_hm["custo_fixo_unitario"] == pytest.approx(3.692307692307692)
+    assert prod_2_hm["custo_absorcao_unitario"] == pytest.approx(56.69230769230769)
+    assert prod_2_hm["lucro_unitario_absorcao"] == pytest.approx(23.30769230769231)
+    assert prod_2_hm["lucro_total_absorcao"] == pytest.approx(34961.53846153846)
 
     prod_3_hm = df_hm[df_hm["produto_id"] == "PROD-003"].iloc[0]
-    assert prod_3_hm["rateio_custo_fixo"] == pytest.approx(5760.00)
-    assert prod_3_hm["custo_fixo_unitario"] == pytest.approx(11.52)
-    assert prod_3_hm["custo_absorcao_unitario"] == pytest.approx(151.52)
-    assert prod_3_hm["lucro_unitario_absorcao"] == pytest.approx(48.48)
-    assert prod_3_hm["lucro_total_absorcao"] == pytest.approx(24240.00)
+    assert prod_3_hm["rateio_custo_fixo"] == pytest.approx(2769.230769230769)
+    assert prod_3_hm["custo_fixo_unitario"] == pytest.approx(5.538461538461538)
+    assert prod_3_hm["custo_absorcao_unitario"] == pytest.approx(145.53846153846155)
+    assert prod_3_hm["lucro_unitario_absorcao"] == pytest.approx(54.46153846153845)
+    assert prod_3_hm["lucro_total_absorcao"] == pytest.approx(27230.769230769226)
 
     # 3. Critério: custo_direto
     df_cd = calcular_custeio_absorcao(
@@ -234,3 +234,42 @@ def test_analisar_desperdicios_eficiencia():
 
     lote_103 = df[df["lote_id"] == "LOTE-103"].iloc[0]
     assert lote_103["taxa_refugo_percentual"] == pytest.approx(80 / (500 + 80))
+
+def test_validar_colunas_csv(tmp_path):
+    from tools import validar_colunas_csv
+    
+    csv_file = tmp_path / "incompleto.csv"
+    df_incompleto = pd.DataFrame({
+        "produto_id": ["PROD-001"],
+        "preco_venda_unitario": [100.0]
+    })
+    df_incompleto.to_csv(csv_file, index=False)
+    
+    colunas_esperadas = ["produto_id", "preco_venda_unitario", "custo_variavel_unitario"]
+    
+    with pytest.raises(ValueError) as excinfo:
+        validar_colunas_csv(str(csv_file), colunas_esperadas)
+        
+    assert f"O arquivo '{csv_file}' esta incompleto. Colunas ausentes: ['custo_variavel_unitario']" in str(excinfo.value)
+
+def test_tool_functions_validate_columns(tmp_path):
+    from tools import calcular_margem_contribuicao, calcular_custeio_absorcao, analisar_desperdicios_eficiencia, calcular_ponto_equilibrio
+    
+    csv_file = tmp_path / "incompleto.csv"
+    df_incompleto = pd.DataFrame({
+        "produto_id": ["PROD-001"],
+        "preco_venda_unitario": [100.0]
+    })
+    df_incompleto.to_csv(csv_file, index=False)
+    
+    with pytest.raises(ValueError):
+        calcular_margem_contribuicao(str(csv_file))
+        
+    with pytest.raises(ValueError):
+        calcular_ponto_equilibrio(str(csv_file), 100.0)
+        
+    with pytest.raises(ValueError):
+        calcular_custeio_absorcao(str(csv_file), str(csv_file), 100.0, "volume")
+        
+    with pytest.raises(ValueError):
+        analisar_desperdicios_eficiencia(str(csv_file), str(csv_file))
