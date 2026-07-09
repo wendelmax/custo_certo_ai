@@ -28,7 +28,7 @@ def main():
     print(resultado)
     
     # Salvar resultado final em arquivo
-    with open("relatorio_controladoria.md", "w") as f:
+    with open("relatorio_controladoria.md", "w", encoding="utf-8") as f:
         f.write(resultado)
     print("\nRelatorio salvo em 'relatorio_controladoria.md'")
 

@@ -62,3 +62,39 @@ def test_crew_kickoff():
     assert agent_calls[0] == ("Analista", "task 1 desc", "")
     assert agent_calls[1] == ("Auditor", "task 2 desc", "\n### Output from Task 1 (Analista):\nResult from Analista\n")
 
+
+def test_df_to_markdown():
+    import numpy as np
+    import pandas as pd
+    from crew import df_to_markdown
+
+    df = pd.DataFrame({
+        "A": [1, np.int64(2), 3],
+        "B": [1.5, np.float64(2.567), pd.NA],
+        "C": ["text", True, False],
+        "D": [None, np.nan, 4.0]
+    })
+    
+    # We convert float columns to nullable or float types
+    # B contains a float and pd.NA, pandas will treat it as object or float (if using Float64)
+    # Let's ensure B uses Float64 type
+    df["B"] = df["B"].astype("Float64")
+    
+    result = df_to_markdown(df)
+    
+    # Expected output:
+    # | A | B | C | D |
+    # | --- | --- | --- | --- |
+    # | 1 | 1.50 | text |  |
+    # | 2 | 2.57 | True |  |
+    # | 3 |  | False | 4.00 |
+    
+    expected = (
+        "| A | B | C | D |\n"
+        "| --- | --- | --- | --- |\n"
+        "| 1 | 1.50 | text |  |\n"
+        "| 2 | 2.57 | True |  |\n"
+        "| 3 |  | False | 4.00 |\n"
+    )
+    assert result == expected
+

@@ -1,6 +1,7 @@
 import pytest
 import os
 import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def test_converter_markdown_para_html():
     from converter_relatorio import converter_markdown_para_html_premium

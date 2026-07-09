@@ -8,22 +8,23 @@ def df_to_markdown(df: pd.DataFrame) -> str:
     if df.empty:
         return ""
     headers = list(df.columns)
-    header_line = "| " + " | ".join(headers) + " |"
-    separator_line = "| " + " | ".join(["---"] * len(headers)) + " |"
-    
-    rows = []
+    markdown_lines = []
+    markdown_lines.append("| " + " | ".join(headers) + " |")
+    markdown_lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
     for _, row in df.iterrows():
         formatted_vals = []
-        for col in headers:
-            val = row[col]
-            if isinstance(val, (float, pd.Float64Dtype)):
-                formatted_vals.append(f"{val:.2f}")
+        for val in row:
+            if pd.api.types.is_number(val) and not isinstance(val, bool):
+                if pd.isna(val):
+                    formatted_vals.append("")
+                elif pd.api.types.is_integer(val):
+                    formatted_vals.append(str(int(val)))
+                else:
+                    formatted_vals.append(f"{val:.2f}")
             else:
-                formatted_vals.append(str(val))
-        row_str = "| " + " | ".join(formatted_vals) + " |"
-        rows.append(row_str)
-        
-    return "\n".join([header_line, separator_line] + rows) + "\n"
+                formatted_vals.append(str(val) if not pd.isna(val) else "")
+        markdown_lines.append("| " + " | ".join(formatted_vals) + " |")
+    return "\n".join(markdown_lines) + "\n"
 
 def montar_equipe_analise(caminho_fin: str, caminho_op: str, custos_fixos: float) -> Crew:
     # 1. Executar os calculos do motor matematico (Tools)
