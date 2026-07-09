@@ -24,7 +24,7 @@ def exportar_analise_excel(caminho_saida: str, df_margens: pd.DataFrame, df_abso
     # 1. ABA 1: Dashboard C-Level
     ws_dash = wb.active
     ws_dash.title = "Dashboard C-Level"
-    ws_dash.views.sheetView[0].showGridLines = True
+    ws_dash.sheet_view.showGridLines = True
     
     ws_dash.append(["Métrica Executiva", "Valor Financeiro"])
     ws_dash.append(["Faturamento Total da Fábrica", pe_dict.get("faturamento_atual_total", 0.0)])
@@ -50,7 +50,7 @@ def exportar_analise_excel(caminho_saida: str, df_margens: pd.DataFrame, df_abso
     # Helper para exportar tabelas genéricas
     def exportar_planilha_tabela(nome_aba: str, df: pd.DataFrame, formats: dict):
         ws = wb.create_sheet(title=nome_aba)
-        ws.views.sheetView[0].showGridLines = True
+        ws.sheet_view.showGridLines = True
         
         # Cabeçalhos
         headers = list(df.columns)
@@ -116,10 +116,14 @@ def exportar_analise_excel(caminho_saida: str, df_margens: pd.DataFrame, df_abso
     abs_consolidado = df_absorcao_vol[["produto_id", "nome_produto", "preco_venda_unitario", "custo_absorcao_unitario", "lucro_unitario_absorcao"]].copy()
     abs_consolidado.columns = ["produto_id", "nome_produto", "Preço Venda", "Absorção Unit. (Volume)", "Lucro Unit. (Volume)"]
     
-    abs_consolidado["Absorção Unit. (Horas)"] = df_absorcao_horas["custo_absorcao_unitario"]
-    abs_consolidado["Lucro Unit. (Horas)"] = df_absorcao_horas["lucro_unitario_absorcao"]
-    abs_consolidado["Absorção Unit. (Custo Dir)"] = df_absorcao_custo["custo_absorcao_unitario"]
-    abs_consolidado["Lucro Unit. (Custo Dir)"] = df_absorcao_custo["lucro_unitario_absorcao"]
+    df_horas_sub = df_absorcao_horas[["produto_id", "custo_absorcao_unitario", "lucro_unitario_absorcao"]].copy()
+    df_horas_sub.columns = ["produto_id", "Absorção Unit. (Horas)", "Lucro Unit. (Horas)"]
+    
+    df_custo_sub = df_absorcao_custo[["produto_id", "custo_absorcao_unitario", "lucro_unitario_absorcao"]].copy()
+    df_custo_sub.columns = ["produto_id", "Absorção Unit. (Custo Dir)", "Lucro Unit. (Custo Dir)"]
+    
+    abs_consolidado = pd.merge(abs_consolidado, df_horas_sub, on="produto_id", how="left")
+    abs_consolidado = pd.merge(abs_consolidado, df_custo_sub, on="produto_id", how="left")
     
     formats_consolidado = {
         "Preço Venda": 'R$ #,##0.00',
@@ -144,6 +148,6 @@ def exportar_analise_excel(caminho_saida: str, df_margens: pd.DataFrame, df_abso
                 val_str = str(cell.value or '')
                 if len(val_str) > max_len:
                     max_len = len(val_str)
-            ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
+            ws.column_dimensions[col_letter].width = max(max_len + 8, 15)
             
     wb.save(caminho_saida)
