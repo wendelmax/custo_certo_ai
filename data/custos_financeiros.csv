@@ -1,0 +1,4 @@
+produto_id,nome_produto,preco_venda_unitario,custo_variavel_unitario,despesas_variaveis_unit,volume_vendas_mensal
+PROD-001,Eixo de Aco 50mm,150.00,70.00,15.00,1000
+PROD-002,Flange de Ferro,80.00,45.00,8.00,1500
+PROD-003,Suporte Especial,200.00,120.00,20.00,500

@@ -1,0 +1,4 @@
+lote_id,produto_id,quantidade_produzida,quantidade_refugada,horas_maquina_parada,custo_hora_maquina
+LOTE-101,PROD-001,1000,50,4.0,150.00
+LOTE-102,PROD-002,1500,20,2.5,100.00
+LOTE-103,PROD-003,500,80,6.0,200.00
