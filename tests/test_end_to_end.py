@@ -74,6 +74,11 @@ def test_main_execution(monkeypatch, tmp_path):
             content = f.read()
         assert "Mock report content for Diretor Financeiro e de Operacoes (CFO)" in content
         
+        # Verificar se os arquivos de relatorios foram gerados com sucesso
+        assert os.path.exists("relatorio_controladoria.md")
+        assert os.path.exists("relatorio_controladoria.html")
+        assert os.path.exists("analise_de_custos.xlsx")
+        
     finally:
         os.chdir(original_cwd)
         # Clean sys.path if necessary
