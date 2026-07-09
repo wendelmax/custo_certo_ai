@@ -65,3 +65,49 @@ def test_calcular_ponto_equilibrio_negative_margin(tmp_path):
     # Margem ponderada será negativa, logo faturamento_equilibrio deve ser 0.0
     assert pe["faturamento_equilibrio_geral"] == 0.0
     assert pe["margem_contribuição_media_ponderada"] < 0
+
+def test_calcular_margem_contribuicao_missing_values(tmp_path):
+    from tools import calcular_margem_contribuicao
+    
+    csv_file = tmp_path / "missing_values.csv"
+    df_missing = pd.DataFrame({
+        "produto_id": ["PROD-001", "PROD-002"],
+        "nome_produto": ["Prod A", "Prod B"],
+        "preco_venda_unitario": [100.0, None],
+        "custo_variavel_unitario": [50.0, 30.0],
+        "despesas_variaveis_unit": [None, 10.0],
+        "volume_vendas_mensal": [10, None]
+    })
+    df_missing.to_csv(csv_file, index=False)
+    
+    with pytest.warns(UserWarning, match="Missing/empty values detected. Pre-filling with 0."):
+        df_result = calcular_margem_contribuicao(str(csv_file))
+        
+    # Check that NaN values were filled with 0 / 0.0
+    assert df_result.loc[1, "preco_venda_unitario"] == 0.0
+    assert df_result.loc[0, "despesas_variaveis_unit"] == 0.0
+    assert df_result.loc[1, "volume_vendas_mensal"] == 0
+
+def test_calcular_margem_contribuicao_zero_price(tmp_path):
+    from tools import calcular_margem_contribuicao
+    
+    csv_file = tmp_path / "zero_price.csv"
+    df_zero_price = pd.DataFrame({
+        "produto_id": ["PROD-001", "PROD-002"],
+        "nome_produto": ["Prod A", "Prod B"],
+        "preco_venda_unitario": [0.0, 100.0],
+        "custo_variavel_unitario": [50.0, 30.0],
+        "despesas_variaveis_unit": [10.0, 10.0],
+        "volume_vendas_mensal": [10, 5]
+    })
+    df_zero_price.to_csv(csv_file, index=False)
+    
+    # It should not crash, and for PROD-001 the percentual margin should be 0.0
+    df_result = calcular_margem_contribuicao(str(csv_file))
+    
+    prod_1 = df_result[df_result["produto_id"] == "PROD-001"].iloc[0]
+    prod_2 = df_result[df_result["produto_id"] == "PROD-002"].iloc[0]
+    
+    assert prod_1["margem_contribuição_percentual"] == 0.0
+    assert prod_2["margem_contribuição_percentual"] == (60.0 / 100.0)
+
