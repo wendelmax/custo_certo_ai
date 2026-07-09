@@ -111,3 +111,41 @@ def test_calcular_margem_contribuicao_zero_price(tmp_path):
     assert prod_1["margem_contribuição_percentual"] == 0.0
     assert prod_2["margem_contribuição_percentual"] == (60.0 / 100.0)
 
+
+def test_calcular_custeio_absorcao():
+    from tools import calcular_custeio_absorcao
+    # Custo fixo = 12000.00
+    # Critério volume
+    df_vol = calcular_custeio_absorcao(
+        "data/custos_financeiros.csv", 
+        "data/logs_operacionais.csv", 
+        12000.00, 
+        "volume"
+    )
+    assert "custo_absorcao_unitario" in df_vol.columns
+    assert len(df_vol) == 3
+
+    # Check that it doesn't crash on invalid criterion
+    with pytest.raises(ValueError):
+        calcular_custeio_absorcao(
+            "data/custos_financeiros.csv", 
+            "data/logs_operacionais.csv", 
+            12000.00, 
+            "criterio_invalido"
+        )
+
+
+def test_analisar_desperdicios_eficiencia():
+    from tools import analisar_desperdicios_eficiencia
+    df = analisar_desperdicios_eficiencia(
+        "data/logs_operacionais.csv",
+        "data/custos_financeiros.csv"
+    )
+    # Lote 101 produziu 1000, refugou 50. Custo MP/Unit = 70.
+    # Custo Refugo = 50 * 70 = 3500.
+    # Horas paradas = 4.0, custo hora = 150. Custo parada = 4.0 * 150 = 600.
+    # Custo ineficiencia total = 4100.
+    lote_101 = df[df["lote_id"] == "LOTE-101"].iloc[0]
+    assert lote_101["custo_refugo"] == 3500.0
+    assert lote_101["custo_parada_maquina"] == 600.0
+    assert lote_101["perda_ineficiencia_total"] == 4100.0
