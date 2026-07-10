@@ -119,12 +119,72 @@ try {
 }
 Write-Step "Dependencias instaladas" Green
 
-# ─── Step 6: Verify .env ────────────────────────────────────────────────────
+# ─── Step 6: Verify / Setup .env ─────────────────────────────────────────────
 
 $envFile = Join-Path $ProjectRoot ".env"
-if (-not (Test-Path $envFile)) {
-    Write-Step "AVISO: Arquivo .env nao encontrado em $envFile" Yellow
-    Write-Step "Crie o arquivo .env com: GEMINI_API_KEY=sua_chave" Yellow
+$Providers = @(
+    @{ Name = "Google Gemini";         Env = "GEMINI_API_KEY" }
+    @{ Name = "OpenAI";                Env = "OPENAI_API_KEY" }
+    @{ Name = "Anthropic Claude";      Env = "ANTHROPIC_API_KEY" }
+    @{ Name = "Groq";                  Env = "GROQ_API_KEY" }
+    @{ Name = "OpenRouter";            Env = "OPENROUTER_API_KEY" }
+    @{ Name = "Hugging Face";          Env = "HF_TOKEN" }
+    @{ Name = "Cerebras";              Env = "CEREBRAS_API_KEY" }
+    @{ Name = "Moonshot";              Env = "MOONSHOT_API_KEY" }
+    @{ Name = "DeepSeek (Alibaba SG)"; Env = "ALIBABA_SINGAPORE_API_KEY" }
+    @{ Name = "DeepSeek (Alibaba US)"; Env = "ALIBABA_US_API_KEY" }
+    @{ Name = "Z.ai";                  Env = "ZAI_API_KEY" }
+    @{ Name = "MiniMax";               Env = "MINIMAX_API_KEY" }
+    @{ Name = "Synthetic";             Env = "SYNTHETIC_API_KEY" }
+    @{ Name = "Avian";                 Env = "AVIAN_API_KEY" }
+)
+
+$hasCredential = $false
+if (Test-Path $envFile) {
+    $envContent = Get-Content $envFile -Raw
+    foreach ($p in $Providers) {
+        if ($envContent -match "$($p.Env)=") {
+            $hasCredential = $true
+            break
+        }
+    }
+}
+
+if (-not $hasCredential) {
+    Write-Host ""
+    Write-Host "  ╔═══════════════════════════════════════╗" -ForegroundColor Yellow
+    Write-Host "  ║    CONFIGURACAO DE CREDENCIAL         ║" -ForegroundColor Yellow
+    Write-Host "  ╚═══════════════════════════════════════╝" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Step "Nenhuma chave de API encontrada no .env" Yellow
+    Write-Step "Escolha um provedor:" White
+    Write-Host ""
+
+    for ($i = 0; $i -lt $Providers.Count; $i++) {
+        Write-Host "  $($i + 1). $($Providers[$i].Name) - $($Providers[$i].Env)" -ForegroundColor White
+    }
+    Write-Host "  $($Providers.Count + 1). Digitar manual (qualquer env)" -ForegroundColor White
+    Write-Host ""
+
+    $choice = $null
+    do {
+        $input = Read-Host "  Escolha (1..$($Providers.Count + 1))"
+        $choice = [int]::TryParse($input, [ref]$choice) ? $choice : $null
+    } while ($null -eq $choice -or $choice -lt 1 -or $choice -gt $Providers.Count + 1)
+
+    if ($choice -eq $Providers.Count + 1) {
+        $envName = Read-Host "  Nome da variavel (ex: GEMINI_API_KEY)"
+        $envValue = Read-Host "  Valor da chave"
+    } else {
+        $selected = $Providers[$choice - 1]
+        $envName = $selected.Env
+        $envValue = Read-Host "  Informe sua chave $($selected.Name)"
+    }
+
+    Set-Content -Path $envFile -Value "$envName=$envValue" -Encoding ASCII
+    Write-Step "Credencial salva em .env" Green
+} else {
+    Write-Step ".env OK" Green
 }
 
 Write-Host ""

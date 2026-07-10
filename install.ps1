@@ -9,6 +9,20 @@ $GithubZip = "https://github.com/$RepoOwner/$RepoName/archive/refs/heads/$Branch
 $PythonVersion = "3.12.3"
 
 $InstallDir = "$env:USERPROFILE\custo_certo"
+$Providers = @(
+    @{ Name = "Google Gemini";         Env = "GEMINI_API_KEY";      Desc = "Recomendado" }
+    @{ Name = "OpenAI";                Env = "OPENAI_API_KEY";      Desc = "ChatGPT / GPT-4" }
+    @{ Name = "Anthropic Claude";      Env = "ANTHROPIC_API_KEY";   Desc = "Claude Sonnet / Haiku" }
+    @{ Name = "Groq";                  Env = "GROQ_API_KEY";        Desc = "Llama / Mixtral via Groq" }
+    @{ Name = "OpenRouter";            Env = "OPENROUTER_API_KEY";  Desc = "Multi-modelo" }
+    @{ Name = "Azure OpenAI";          Env = "AZURE_OPENAI_API_KEY"; Desc = "Requer endpoint + versao" }
+    @{ Name = "Amazon Bedrock";        Env = "AWS_ACCESS_KEY_ID";   Desc = "Claude via AWS" }
+    @{ Name = "Hugging Face";          Env = "HF_TOKEN";            Desc = "Modelos open-source" }
+    @{ Name = "Cerebras";              Env = "CEREBRAS_API_KEY";    Desc = "" }
+    @{ Name = "Moonshot";              Env = "MOONSHOT_API_KEY";    Desc = "" }
+    @{ Name = "DeepSeek (Alibaba SG)"; Env = "ALIBABA_SINGAPORE_API_KEY"; Desc = "" }
+    @{ Name = "DeepSeek (Alibaba US)"; Env = "ALIBABA_US_API_KEY";  Desc = "" }
+)
 $RuntimeDir = "$InstallDir\_runtime"
 $PythonDir = "$RuntimeDir\python"
 $PythonExe = "$PythonDir\python.exe"
@@ -122,7 +136,81 @@ Write-Step "Instalando dependencias..." Yellow
 & $PythonExe -m pip install -r "$InstallDir\requirements.txt" --quiet 2>&1 | Out-Null
 Write-Step "Dependencias instaladas" Green
 
-# ─── 5. Criar atalhos ─────────────────────────────────────────────────────────
+# ─── 5. Configurar credencial da IA ──────────────────────────────────────────
+
+$envFile = "$InstallDir\.env"
+$hasCredential = $false
+
+if (Test-Path $envFile) {
+    $envContent = Get-Content $envFile -Raw
+    foreach ($p in $Providers) {
+        if ($envContent -match "$($p.Env)=") {
+            $hasCredential = $true
+            break
+        }
+    }
+}
+
+if (-not $hasCredential) {
+    Write-Host ""
+    Write-Host "  ╔═══════════════════════════════════════╗" -ForegroundColor Yellow
+    Write-Host "  ║    CONFIGURACAO DE CREDENCIAL         ║" -ForegroundColor Yellow
+    Write-Host "  ╚═══════════════════════════════════════╝" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Step "Nenhuma chave de API encontrada." Yellow
+    Write-Step "Escolha um provedor para sua chave:" White
+    Write-Host ""
+
+    for ($i = 0; $i -lt $Providers.Count; $i++) {
+        $p = $Providers[$i]
+        $desc = if ($p.Desc) { " ($($p.Desc))" } else { "" }
+        Write-Host "  $($i + 1). $($p.Name) - $($p.Env)$desc" -ForegroundColor White
+    }
+    Write-Host "  $($Providers.Count + 1). Digitar chave manual (env personalizado)" -ForegroundColor White
+    Write-Host ""
+
+    $choice = $null
+    do {
+        $input = Read-Host "  Escolha (1..$($Providers.Count + 1))"
+        $choice = [int]::TryParse($input, [ref]$choice) ? $choice : $null
+    } while ($null -eq $choice -or $choice -lt 1 -or $choice -gt $Providers.Count + 1)
+
+    if ($choice -eq $Providers.Count + 1) {
+        $envName = Read-Host "  Nome da variavel de ambiente (ex: GEMINI_API_KEY)"
+        $envValue = Read-Host "  Valor da chave"
+    } else {
+        $selected = $Providers[$choice - 1]
+        $envName = $selected.Env
+        if ($envName -eq "AZURE_OPENAI_API_KEY") {
+            $envValue = Read-Host "  Informe a chave Azure OpenAI"
+            $endpoint = Read-Host "  Informe o endpoint (ex: https://xxx.openai.azure.com)"
+            $apiVersion = Read-Host "  Informe a versao da API (ex: 2024-02-15-preview)"
+            Add-Content -Path $envFile -Value "AZURE_OPENAI_API_ENDPOINT=$endpoint"
+            Add-Content -Path $envFile -Value "AZURE_OPENAI_API_VERSION=$apiVersion"
+        } elseif ($envName -eq "AWS_ACCESS_KEY_ID") {
+            $envValue = Read-Host "  Informe sua AWS Access Key ID"
+            $secret = Read-Host "  Informe sua AWS Secret Access Key"
+            $region = Read-Host "  Informe a regiao (ex: us-east-1)"
+            Add-Content -Path $envFile -Value "AWS_SECRET_ACCESS_KEY=$secret"
+            Add-Content -Path $envFile -Value "AWS_REGION=$region"
+        } elseif ($envName -eq "VERTEXAI_PROJECT") {
+            $envValue = Read-Host "  Informe o ID do projeto Google Cloud"
+            $location = Read-Host "  Informe a localizacao (ex: us-central1)"
+            Add-Content -Path $envFile -Value "VERTEXAI_LOCATION=$location"
+        } else {
+            $envValue = Read-Host "  Informe sua chave $($selected.Name)"
+        }
+    }
+
+    if ($envName -and $envValue) {
+        Set-Content -Path $envFile -Value "$envName=$envValue" -Encoding ASCII
+        Write-Step "Credencial salva em .env" Green
+    }
+} else {
+    Write-Step ".env ja configurado" Green
+}
+
+# ─── 6. Criar atalhos ─────────────────────────────────────────────────────────
 
 # Desktop shortcut
 $desktop = [Environment]::GetFolderPath("Desktop")
