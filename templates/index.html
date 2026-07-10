@@ -89,7 +89,26 @@
     .dropzone:hover, .dropzone.dragover { background: var(--color-dropzone-hover); border-color: var(--color-dropzone-border-hover); }
 
     .kpi-card { background: var(--color-surface); border: 1px solid var(--color-border); box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s; }
-    .kpi-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .kpi-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+
+    .hover-lift { transition: transform .18s ease, box-shadow .18s ease; }
+    .hover-lift:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+    .has-tooltip { position: relative; cursor: help; }
+    .has-tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%; transform: translateX(-50%);
+      bottom: calc(100% + 6px);
+      background: var(--color-text);
+      color: var(--color-bg);
+      font-size: .75rem;
+      padding: .375rem .75rem;
+      border-radius: .375rem;
+      white-space: nowrap;
+      z-index: 50;
+      pointer-events: none;
+    }
 
     .slide-in { animation: slideIn .4s ease-out both; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -157,10 +176,10 @@
   </header>
 
   <!-- ============ MAIN CONTENT ============ -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
 
     <!-- ==================== FORM SECTION ==================== -->
-    <section id="form-section" class="theme-surface rounded-xl border theme-border shadow-sm p-6 sm:p-8 mb-8">
+    <section id="form-section" class="theme-surface rounded-xl border theme-border shadow-sm p-6 sm:p-8 lg:p-10 mb-10 hover-lift">
       <div class="flex items-center gap-2 mb-6">
         <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
         <h2 class="text-xl font-semibold theme-text">Upload de Dados</h2>
@@ -259,67 +278,67 @@
     </section>
 
     <!-- ==================== RESULTS SECTION ==================== -->
-    <section id="results" class="space-y-8">
+    <section id="results" class="space-y-10">
 
       <!-- KPI Dashboard -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="kpi-grid">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6" id="kpi-grid">
         <!-- Ponto de Equilíbrio -->
-        <div class="kpi-card rounded-xl p-5 slide-in" style="animation-delay: 0s;">
+        <div class="kpi-card rounded-xl p-6 slide-in hover-lift" style="animation-delay: 0s;" data-tooltip="Faturamento mínimo para cobrir todos os custos">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium theme-text-secondary">Ponto de Equilíbrio</span>
-            <span class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--color-accent-light);">
+            <span class="text-sm font-medium theme-text-secondary has-tooltip" data-tooltip="Valor que a empresa precisa faturar para não ter prejuízo">Ponto de Equilíbrio</span>
+            <span class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--color-accent-light);">
               <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </span>
           </div>
-          <p class="text-2xl font-bold theme-text" id="kpi-equilibrio">—</p>
-          <p class="text-xs theme-text-muted mt-1">Faturamento mínimo necessário</p>
+          <p class="text-3xl font-bold theme-text" id="kpi-equilibrio">—</p>
+          <p class="text-xs theme-text-muted mt-2">Faturamento mínimo necessário</p>
         </div>
 
         <!-- Margem Média -->
-        <div class="kpi-card rounded-xl p-5 slide-in" style="animation-delay: .1s;">
+        <div class="kpi-card rounded-xl p-6 slide-in hover-lift" style="animation-delay: .1s;" data-tooltip="Percentual médio de margem sobre o preço de venda">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium theme-text-secondary">Margem Média</span>
-            <span class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--color-success-bg);">
+            <span class="text-sm font-medium theme-text-secondary has-tooltip" data-tooltip="Quanto sobra do preço após custos variáveis">Margem Média</span>
+            <span class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--color-success-bg);">
               <svg class="w-5 h-5" style="color: var(--color-success);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
             </span>
           </div>
-          <p class="text-2xl font-bold theme-text" id="kpi-margem">—</p>
-          <p class="text-xs theme-text-muted mt-1">Margem de contribuição média</p>
+          <p class="text-3xl font-bold theme-text" id="kpi-margem">—</p>
+          <p class="text-xs theme-text-muted mt-2">Margem de contribuição média</p>
         </div>
 
         <!-- Custo de Refugo -->
-        <div class="kpi-card rounded-xl p-5 slide-in" style="animation-delay: .2s;">
+        <div class="kpi-card rounded-xl p-6 slide-in hover-lift" style="animation-delay: .2s;" data-tooltip="Custo total com materiais refugados e paradas de máquina">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium theme-text-secondary">Custo de Refugo</span>
-            <span class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--color-warning-bg);">
+            <span class="text-sm font-medium theme-text-secondary has-tooltip" data-tooltip="Soma de todo desperdício no período analisado">Custo de Refugo</span>
+            <span class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--color-warning-bg);">
               <svg class="w-5 h-5" style="color: var(--color-warning);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
             </span>
           </div>
-          <p class="text-2xl font-bold theme-text" id="kpi-refugo">—</p>
-          <p class="text-xs theme-text-muted mt-1">Custo total de desperdícios</p>
+          <p class="text-3xl font-bold theme-text" id="kpi-refugo">—</p>
+          <p class="text-xs theme-text-muted mt-2">Custo total de desperdícios</p>
         </div>
       </div>
 
       <!-- Charts -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="theme-surface rounded-xl border theme-border shadow-sm p-5">
-          <h3 class="text-sm font-medium theme-text mb-4">Distribuição de Custos</h3>
+        <div class="theme-surface rounded-xl border theme-border shadow-sm p-6 hover-lift">
+          <h3 class="text-sm font-medium theme-text mb-4 has-tooltip" data-tooltip="Proporção entre custos variáveis, fixos e desperdício">Distribuição de Custos</h3>
           <canvas id="chart-donut"></canvas>
         </div>
-        <div class="theme-surface rounded-xl border theme-border shadow-sm p-5">
-          <h3 class="text-sm font-medium theme-text mb-4">Top Produtos por Margem</h3>
+        <div class="theme-surface rounded-xl border theme-border shadow-sm p-6 hover-lift">
+          <h3 class="text-sm font-medium theme-text mb-4 has-tooltip" data-tooltip="Os 5 produtos que mais geram margem absoluta">Top Produtos por Margem</h3>
           <canvas id="chart-bar"></canvas>
         </div>
       </div>
 
       <!-- Report -->
-      <div class="theme-surface rounded-xl border theme-border shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b theme-border flex items-center justify-between flex-wrap gap-3">
+      <div class="theme-surface rounded-xl border theme-border shadow-sm overflow-hidden hover-lift">
+        <div class="px-6 sm:px-8 py-5 border-b theme-border flex items-center justify-between flex-wrap gap-3">
           <div class="flex items-center gap-2">
             <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <h3 class="text-lg font-semibold theme-text">Relatório de Análise</h3>
           </div>
-          <div class="flex gap-2">
+          <div class="flex gap-3">
             <a href="/download/excel" class="btn-download" id="btn-download-excel">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               Download Excel
@@ -330,7 +349,7 @@
             </a>
           </div>
         </div>
-        <div class="p-6" id="relatorio-conteudo">
+        <div class="p-6 sm:p-8" id="relatorio-conteudo">
           <p class="theme-text-secondary text-sm italic">Após a análise, o relatório completo aparecerá aqui.</p>
         </div>
       </div>
@@ -338,7 +357,7 @@
   </main>
 
   <!-- ============ FOOTER ============ -->
-  <footer class="border-t theme-border mt-12 py-6">
+  <footer class="border-t theme-border mt-16 py-8">
     <p class="text-center text-xs theme-text-muted">Custo Certo AI &mdash; Plataforma de Análise de Custos Industriais</p>
   </footer>
 
