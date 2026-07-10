@@ -92,7 +92,7 @@ Write-Step "Projeto baixado para $InstallDir" Green
 # ─── 2. Baixar Python portatil ────────────────────────────────────────────────
 
 Write-Step "Baixando Python $PythonVersion (portatil)..." Yellow
-New-Item -ItemType Directory -Force -Path $RuntimeDir | Out-Null
+New-Item -ItemType Directory -Force -Path $PythonDir | Out-Null
 
 $pythonUrl = "https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-embed-amd64.zip"
 $pythonZip = "$RuntimeDir\python.zip"
@@ -104,20 +104,15 @@ try {
         [System.Net.WebClient]::new().DownloadFile($pythonUrl, $pythonZip)
     }
 
-    # Extrair para temp e achatar estrutura (evita subpastas)
-    $tempExtract = "$RuntimeDir\_py_extract"
-    New-Item -ItemType Directory -Force -Path $tempExtract | Out-Null
-    Expand-Archive -Path $pythonZip -DestinationPath $tempExtract -Force
+    Expand-Archive -Path $pythonZip -DestinationPath $PythonDir -Force
 
-    # Se o zip contiver uma subpasta unica, achatar
-    $items = Get-ChildItem -Path $tempExtract
+    # Se o zip contiver uma subpasta unica, achatar (caso raro)
+    $items = Get-ChildItem -Path $PythonDir
     if ($items.Count -eq 1 -and $items[0].PSIsContainer) {
-        Get-ChildItem -Path $items[0].FullName | Move-Item -Destination $PythonDir -Force
-        Remove-Item -Recurse -Force $items[0].FullName
-    } else {
-        Get-ChildItem -Path $tempExtract | Move-Item -Destination $PythonDir -Force
+        $sub = $items[0].FullName
+        Get-ChildItem -Path $sub | Move-Item -Destination $PythonDir -Force
+        Remove-Item -Recurse -Force $sub
     }
-    Remove-Item -Recurse -Force $tempExtract
     Remove-Item $pythonZip -Force
 } catch {
     Write-Step "Falha ao baixar Python: $_" Red

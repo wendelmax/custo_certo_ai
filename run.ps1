@@ -39,7 +39,7 @@ if ($needPython) {
     $zipPath = Join-Path $RuntimeDir "python.zip"
 
     Write-Step "Baixando Python $PythonVersion (portatil)..." Yellow
-    New-Item -ItemType Directory -Force -Path $RuntimeDir | Out-Null
+    New-Item -ItemType Directory -Force -Path $PythonDir | Out-Null
 
     try {
         if (Test-CommandAvailable "curl.exe") {
@@ -53,17 +53,13 @@ if ($needPython) {
     }
 
     Write-Step "Extraindo..." Yellow
-    $tempExtract = Join-Path $RuntimeDir "_py_extract"
-    New-Item -ItemType Directory -Force -Path $tempExtract | Out-Null
-    Expand-Archive -Path $zipPath -DestinationPath $tempExtract -Force
-    $items = Get-ChildItem -Path $tempExtract
+    Expand-Archive -Path $zipPath -DestinationPath $PythonDir -Force
+    $items = Get-ChildItem -Path $PythonDir
     if ($items.Count -eq 1 -and $items[0].PSIsContainer) {
-        Get-ChildItem -Path $items[0].FullName | Move-Item -Destination $PythonDir -Force
-        Remove-Item -Recurse -Force $items[0].FullName
-    } else {
-        Get-ChildItem -Path $tempExtract | Move-Item -Destination $PythonDir -Force
+        $sub = $items[0].FullName
+        Get-ChildItem -Path $sub | Move-Item -Destination $PythonDir -Force
+        Remove-Item -Recurse -Force $sub
     }
-    Remove-Item -Recurse -Force $tempExtract
     Remove-Item $zipPath -Force
 
     Write-Step "Python $PythonVersion pronto" Green
