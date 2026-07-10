@@ -25,6 +25,10 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 def index():
     return render_template('index.html')
 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
 
 @app.route('/analisar', methods=['POST'])
 def analisar():
