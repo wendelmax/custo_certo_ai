@@ -1,253 +1,386 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Custo Certo AI — Análise de Custos Industriais</title>
   <script src="/static/tailwind.browser.js"></script>
+  <script src="/static/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; transition: background-color .3s, color .3s; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; transition: background-color .4s, color .4s; }
 
     :root {
-      --color-bg: #f1f5f9;
-      --color-surface: #ffffff;
-      --color-surface-hover: #f8fafc;
-      --color-text: #0f172a;
-      --color-text-secondary: #475569;
-      --color-text-muted: #94a3b8;
-      --color-border: #e2e8f0;
-      --color-border-hover: #cbd5e1;
-      --color-accent: #2563eb;
-      --color-accent-hover: #1d4ed8;
-      --color-accent-light: #eff6ff;
-      --color-success: #059669;
-      --color-success-bg: #ecfdf5;
-      --color-warning: #d97706;
-      --color-warning-bg: #fffbeb;
-      --color-danger: #dc2626;
-      --color-danger-bg: #fef2f2;
-      --color-header-bg: rgba(255,255,255,.8);
-      --color-dropzone: #f8fafc;
-      --color-dropzone-border: #cbd5e1;
-      --color-dropzone-hover: #eff6ff;
-      --color-dropzone-border-hover: #93c5fd;
-      --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
-      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
-      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
+      --bg: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-header: rgba(255,255,255,.72);
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+      --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.06), 0 2px 4px -2px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -4px rgba(0,0,0,.04);
+      --shadow-xl: 0 20px 25px -5px rgba(0,0,0,.08), 0 8px 10px -6px rgba(0,0,0,.04);
+      --ring: rgba(37,99,235,.12);
     }
 
     html.dark {
-      --color-bg: #0f172a;
-      --color-surface: #1e293b;
-      --color-surface-hover: #334155;
-      --color-text: #f1f5f9;
-      --color-text-secondary: #94a3b8;
-      --color-text-muted: #64748b;
-      --color-border: #334155;
-      --color-border-hover: #475569;
-      --color-accent: #3b82f6;
-      --color-accent-hover: #60a5fa;
-      --color-accent-light: #1e3a5f;
-      --color-success: #34d399;
-      --color-success-bg: #064e3b;
-      --color-warning: #fbbf24;
-      --color-warning-bg: #78350f;
-      --color-danger: #f87171;
-      --color-danger-bg: #7f1d1d;
-      --color-header-bg: rgba(15,23,42,.8);
-      --color-dropzone: #1e293b;
-      --color-dropzone-border: #475569;
-      --color-dropzone-hover: #1e3a5f;
-      --color-dropzone-border-hover: #3b82f6;
+      --bg: #0b1120;
+      --bg-card: #131c31;
+      --bg-card-hover: #1a2744;
+      --bg-header: rgba(11,17,32,.78);
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border: #1e293b;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --primary-light: #1e3a5f;
+      --success: #34d399;
+      --success-bg: #064e3b;
+      --warning: #fbbf24;
+      --warning-bg: #78350f;
+      --danger: #f87171;
+      --danger-bg: #7f1d1d;
       --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
-      --shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
-      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.4), 0 2px 4px -2px rgba(0,0,0,.3);
-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.5), 0 4px 6px -4px rgba(0,0,0,.4);
+      --shadow: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.5), 0 2px 4px -2px rgba(0,0,0,.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.6), 0 4px 6px -4px rgba(0,0,0,.4);
+      --shadow-xl: 0 20px 25px -5px rgba(0,0,0,.6), 0 8px 10px -6px rgba(0,0,0,.4);
+      --ring: rgba(59,130,246,.18);
     }
 
-    body { background: var(--color-bg); color: var(--color-text); }
+    body { background: var(--bg); color: var(--text); }
 
-    .theme-surface { background: var(--color-surface); }
-    .theme-surface-hover:hover { background: var(--color-surface-hover); }
-    .theme-text { color: var(--color-text); }
-    .theme-text-secondary { color: var(--color-text-secondary); }
-    .theme-text-muted { color: var(--color-text-muted); }
-    .theme-border { border-color: var(--color-border); }
-    .theme-border-hover:hover { border-color: var(--color-border-hover); }
-    .theme-accent { color: var(--color-accent); }
-    .theme-accent-bg { background: var(--color-accent); }
-    .theme-accent-bg-hover:hover { background: var(--color-accent-hover); }
-    .theme-accent-light-bg { background: var(--color-accent-light); }
-    .theme-header-bg { background: var(--color-header-bg); }
-
-    .dropzone { background: var(--color-dropzone); border-color: var(--color-dropzone-border); border-style: dashed; transition: all .2s; }
-    .dropzone:hover, .dropzone.dragover { background: var(--color-dropzone-hover); border-color: var(--color-dropzone-border-hover); }
-
-    .kpi-card { background: var(--color-surface); border: 1px solid var(--color-border); box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s; }
-    .kpi-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
-
-    .hover-lift { transition: transform .18s ease, box-shadow .18s ease; }
-    .hover-lift:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-
-    .has-tooltip { position: relative; cursor: help; }
-    .has-tooltip:hover::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      left: 50%; transform: translateX(-50%);
-      bottom: calc(100% + 6px);
-      background: var(--color-text);
-      color: var(--color-bg);
-      font-size: .75rem;
-      padding: .375rem .75rem;
-      border-radius: .375rem;
-      white-space: nowrap;
-      z-index: 50;
-      pointer-events: none;
+    .bg-gradient-hero {
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37,99,235,.12), transparent),
+        var(--bg);
+    }
+    html.dark .bg-gradient-hero {
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59,130,246,.15), transparent),
+        var(--bg);
     }
 
-    .slide-in { animation: slideIn .4s ease-out both; }
-    @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: var(--bg-card); border-radius: 1.25rem; box-shadow: var(--shadow); transition: all .25s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
+    .card-border { border: 1px solid var(--border); }
+    .card-ring { box-shadow: var(--shadow), 0 0 0 1px var(--border); }
+    .card-ring:hover { box-shadow: var(--shadow-lg), 0 0 0 1px var(--ring); }
 
-    .spinner { width: 20px; height: 20px; border: 2.5px solid var(--color-border); border-top-color: var(--color-accent); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; vertical-align: middle; }
+    .glass { background: var(--bg-header); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+    .text-balance { text-wrap: balance; }
+
+    .dropzone { transition: all .2s; cursor: pointer; }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--primary); background: var(--primary-light); }
+
+    .spinner { width: 20px; height: 20px; border: 2.5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    #relatorio-conteudo h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-text); }
-    #relatorio-conteudo h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .75rem; color: var(--color-text); }
-    #relatorio-conteudo h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: .5rem; }
-    #relatorio-conteudo p { margin-bottom: .75rem; line-height: 1.625; }
-    #relatorio-conteudo table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-    #relatorio-conteudo th, #relatorio-conteudo td { padding: .625rem .75rem; border: 1px solid var(--color-border); text-align: left; }
-    #relatorio-conteudo th { background: var(--color-accent-light); font-weight: 600; font-size: .875rem; }
-    #relatorio-conteudo ul, #relatorio-conteudo ol { padding-left: 1.5rem; margin-bottom: .75rem; }
-    #relatorio-conteudo li { margin-bottom: .25rem; }
-    #relatorio-conteudo blockquote { border-left: 3px solid var(--color-accent); padding-left: 1rem; margin: 1rem 0; color: var(--color-text-secondary); }
+    .slide-in { animation: slideIn .4s ease-out both; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-    input[type="file"]::file-selector-button { background: var(--color-accent); color: #fff; border: none; padding: .375rem .75rem; border-radius: .375rem; font-size: .8125rem; cursor: pointer; transition: background .2s; }
-    input[type="file"]::file-selector-button:hover { background: var(--color-accent-hover); }
+    .fade-in { animation: fadeIn .3s ease-out both; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1.75rem; border-radius: .75rem; font-weight: 600; font-size: .9375rem; transition: all .2s; cursor: pointer; border: none; }
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,.3); }
+    .btn-primary:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(37,99,235,.4); }
+    .btn-primary:active { transform: scale(.98); }
+
+    .file-chip { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1rem; background: var(--primary-light); border-radius: 9999px; font-size: .875rem; color: var(--primary); border: 1px solid var(--border); margin-top: .75rem; animation: slideIn .2s ease-out; }
+    .file-chip button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.125rem; line-height: 1; padding: 0; display: inline-flex; }
+    .file-chip button:hover { color: var(--danger); }
+    .file-chip .chip-success { color: var(--success); }
+    .file-chip .chip-size { color: var(--text-muted); font-weight: 400; font-size: .75rem; }
 
     input[type="number"] { -moz-appearance: textfield; }
     input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-
-    .file-chip { display: inline-flex; align-items: center; gap: .375rem; padding: .25rem .625rem; background: var(--color-accent-light); border-radius: 9999px; font-size: .8125rem; color: var(--color-accent); border: 1px solid var(--color-border); margin-top: .5rem; }
-    .file-chip button { background: none; border: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem; line-height: 1; padding: 0; display: inline-flex; }
-    .file-chip button:hover { color: var(--color-danger); }
+    input[type="file"]::file-selector-button { display: none; }
 
     #results { display: none; }
     #results.visible { display: block; }
 
-    .btn-download { display: inline-flex; align-items: center; gap: .5rem; padding: .625rem 1.25rem; border-radius: .5rem; font-weight: 500; font-size: .875rem; transition: all .2s; cursor: pointer; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
-    .btn-download:hover { background: var(--color-surface-hover); border-color: var(--color-border-hover); box-shadow: var(--shadow-sm); }
-    .btn-download svg { width: 18px; height: 18px; }
+    #relatorio-conteudo h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--text); }
+    #relatorio-conteudo h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .75rem; color: var(--text); }
+    #relatorio-conteudo h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: .5rem; }
+    #relatorio-conteudo p { margin-bottom: .75rem; line-height: 1.7; }
+    #relatorio-conteudo table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    #relatorio-conteudo th, #relatorio-conteudo td { padding: .75rem 1rem; border: 1px solid var(--border); text-align: left; }
+    #relatorio-conteudo th { background: var(--primary-light); font-weight: 600; font-size: .875rem; }
+    #relatorio-conteudo ul, #relatorio-conteudo ol { padding-left: 1.5rem; margin-bottom: .75rem; }
+    #relatorio-conteudo li { margin-bottom: .25rem; }
+    #relatorio-conteudo blockquote { border-left: 3px solid var(--primary); padding-left: 1rem; margin: 1rem 0; color: var(--text-secondary); }
+    #relatorio-conteudo hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
 
-    .error-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--color-danger-bg); color: var(--color-danger); border: 1px solid var(--color-danger); padding: .875rem 1.25rem; border-radius: .5rem; font-size: .875rem; font-weight: 500; box-shadow: var(--shadow-lg); z-index: 100; animation: slideIn .3s ease-out; max-width: 24rem; }
+    .error-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); padding: 1rem 1.5rem; border-radius: .75rem; font-size: .875rem; font-weight: 500; box-shadow: var(--shadow-xl); z-index: 100; animation: slideIn .3s ease-out; max-width: 24rem; }
+
+    .step { display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem; border-radius: .75rem; transition: all .2s; }
+    .step-number { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; flex-shrink: 0; transition: all .2s; }
+    .step.active .step-number { background: var(--primary); color: #fff; box-shadow: 0 0 0 4px var(--ring); }
+    .step.done .step-number { background: var(--success); color: #fff; }
+    .step.pending .step-number { background: var(--bg-card-hover); color: var(--text-muted); border: 1px solid var(--border); }
+    .step.active { background: var(--primary-light); }
+    .step-label { font-size: .8125rem; font-weight: 600; color: var(--text); }
+    .step-desc { font-size: .6875rem; color: var(--text-muted); }
+
+    .progress-bar { height: 3px; background: var(--border); border-radius: 9999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #06b6d4); border-radius: 9999px; transition: width .5s ease; }
+
+    .tooltip { position: relative; cursor: help; }
+    .tooltip:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: 50%; transform: translateX(-50%);
+      bottom: calc(100% + 8px);
+      background: var(--text);
+      color: var(--bg);
+      font-size: .75rem;
+      padding: .375rem .75rem;
+      border-radius: .5rem;
+      white-space: nowrap;
+      z-index: 50;
+      pointer-events: none;
+      font-weight: 500;
+    }
   </style>
 </head>
-<body>
+<body class="bg-gradient-hero">
 
-  <!-- ============ HEADER ============ -->
-  <header class="theme-header-bg sticky top-0 z-50 border-b theme-border" style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- ============ HEADER PREMIUM ============ -->
+  <header class="glass sticky top-0 z-50 border-b" style="border-color: var(--border);">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg theme-accent-bg flex items-center justify-center flex-shrink-0">
+        <div class="flex items-center gap-4">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-md flex-shrink-0">
             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           </div>
           <div>
-            <h1 class="text-lg font-bold theme-text">Custo Certo AI</h1>
-            <p class="text-xs theme-text-muted -mt-0.5">Controladoria &amp; Análise de Custos</p>
+            <h1 class="text-base font-bold tracking-tight" style="color: var(--text);">Custo Certo AI</h1>
+            <p class="text-[.68rem] leading-none" style="color: var(--text-muted);">Controladoria Inteligente</p>
           </div>
         </div>
-
-        <div class="flex items-center gap-4">
-          <span class="text-sm theme-text-muted hidden sm:inline">Tema</span>
-          <button id="theme-toggle" class="relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-accent)]" style="background: var(--color-border);" aria-label="Alternar tema">
+        <div class="flex items-center gap-3">
+          <span class="hidden sm:inline text-xs font-medium px-3 py-1.5 rounded-full" style="background: var(--primary-light); color: var(--primary);">Workspace: Indústria</span>
+          <button id="theme-toggle" class="relative w-11 h-6 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[var(--ring)]" style="background: var(--border);" aria-label="Alternar tema">
             <span id="theme-thumb" class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 flex items-center justify-center">
               <svg id="theme-icon" class="w-3 h-3" style="color: #f59e0b;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
             </span>
           </button>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+            W
+          </div>
         </div>
       </div>
     </div>
   </header>
 
+  <!-- ============ HERO ============ -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-8 pt-20 pb-12 text-center">
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-6" style="background: var(--primary-light); color: var(--primary);">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Análise com Inteligência Artificial
+    </span>
+    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-balance" style="color: var(--text);">
+      Controle seus custos<br>
+      <span class="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">industriais com IA</span>
+    </h1>
+    <p class="mt-5 text-lg sm:text-xl" style="color: var(--text-secondary); max-width: 600px; margin-left: auto; margin-right: auto;">
+      Upload dos dados, análise automática de margens, desperdícios e eficiência — relatório completo em segundos.
+    </p>
+    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+      <button onclick="document.getElementById('form-section').scrollIntoView({behavior:'smooth', block:'start'})" class="btn btn-primary text-base px-8 py-3.5">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        Iniciar Análise
+      </button>
+      <a href="#kpi-grid" class="btn" style="background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border);" onclick="event.preventDefault(); document.getElementById('kpi-grid').scrollIntoView({behavior:'smooth', block:'start'})">
+        Ver Exemplo
+      </a>
+    </div>
+    <div class="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 max-w-3xl mx-auto">
+      <div class="px-3 py-2 rounded-xl text-center" style="background: var(--bg-card);">
+        <p class="text-xs font-semibold" style="color: var(--text);">Preços</p>
+      </div>
+      <div class="px-3 py-2 rounded-xl text-center" style="background: var(--bg-card);">
+        <p class="text-xs font-semibold" style="color: var(--text);">Margens</p>
+      </div>
+      <div class="px-3 py-2 rounded-xl text-center" style="background: var(--bg-card);">
+        <p class="text-xs font-semibold" style="color: var(--text);">BOM</p>
+      </div>
+      <div class="px-3 py-2 rounded-xl text-center" style="background: var(--bg-card);">
+        <p class="text-xs font-semibold" style="color: var(--text);">Logs</p>
+      </div>
+      <div class="px-3 py-2 rounded-xl text-center" style="background: var(--bg-card);">
+        <p class="text-xs font-semibold" style="color: var(--text);">Custos</p>
+      </div>
+      <div class="px-3 py-2 rounded-xl text-center" style="background: var(--bg-card);">
+        <p class="text-xs font-semibold" style="color: var(--text);">Refugo</p>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ MAIN CONTENT ============ -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+  <main class="max-w-5xl mx-auto px-6 lg:px-8 pb-20">
+
+    <!-- Progress Stepper -->
+    <div class="card card-border p-5 mb-10 slide-in">
+      <div class="flex items-center justify-between" id="progress-steps">
+        <div class="step active" data-step="1">
+          <span class="step-number">1</span>
+          <div class="hidden sm:block">
+            <p class="step-label">Upload</p>
+            <p class="step-desc">Dados da planta</p>
+          </div>
+        </div>
+        <div class="flex-1 mx-4">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="step pending" data-step="2">
+          <span class="step-number">2</span>
+          <div class="hidden sm:block">
+            <p class="step-label">IA</p>
+            <p class="step-desc">Processamento</p>
+          </div>
+        </div>
+        <div class="flex-1 mx-4">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="step pending" data-step="3">
+          <span class="step-number">3</span>
+          <div class="hidden sm:block">
+            <p class="step-label">Resultado</p>
+            <p class="step-desc">KPIs & Gráficos</p>
+          </div>
+        </div>
+        <div class="flex-1 mx-4">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="step pending" data-step="4">
+          <span class="step-number">4</span>
+          <div class="hidden sm:block">
+            <p class="step-label">Relatório</p>
+            <p class="step-desc">Download</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- ==================== FORM SECTION ==================== -->
-    <section id="form-section" class="theme-surface rounded-xl border theme-border shadow-sm p-6 sm:p-8 lg:p-10 mb-10 hover-lift">
-      <div class="flex items-center gap-2 mb-6">
-        <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-        <h2 class="text-xl font-semibold theme-text">Upload de Dados</h2>
+    <section id="form-section" class="card card-border p-8 sm:p-10 mb-10 slide-in">
+      <div class="flex items-center gap-3 mb-8">
+        <span class="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold" style="background: var(--primary); color: #fff;">1</span>
+        <div>
+          <h2 class="text-xl font-bold tracking-tight" style="color: var(--text);">Upload de Dados</h2>
+          <p class="text-sm" style="color: var(--text-muted);">Forneça os arquivos para análise</p>
+        </div>
       </div>
 
       <form id="analise-form" enctype="multipart/form-data">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <!-- Financeiro (required) -->
-          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-financeiro">
-            <div class="flex flex-col items-center text-center gap-2">
-              <svg class="w-8 h-8 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <p class="text-sm font-medium theme-text">Dados Financeiros <span class="theme-text-secondary font-normal">(CSV)</span></p>
-              <p class="text-xs theme-text-muted">Arraste o arquivo ou clique para selecionar</p>
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-danger-bg); color: var(--color-danger);">Obrigatório</span>
+          <!-- Financeiro -->
+          <div class="dropzone rounded-2xl p-6 sm:p-8 text-center card-border" id="drop-financeiro" style="border-style: dashed;">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background: var(--primary-light);">
+                <svg class="w-6 h-6" style="color: var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <div>
+                <p class="text-base font-semibold" style="color: var(--text);">Dados Financeiros</p>
+                <p class="text-xs mt-0.5" style="color: var(--text-muted);">Preços, volumes, custos variáveis</p>
+              </div>
+              <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background: var(--danger-bg); color: var(--danger);">Obrigatório</span>
+              <p class="text-xs" style="color: var(--text-muted);">Clique ou arraste o CSV aqui</p>
             </div>
             <input type="file" id="file_financeiro" name="file_financeiro" accept=".csv" class="hidden">
-            <div class="file-list mt-3" id="file-list-financeiro"></div>
+            <div class="file-list" id="file-list-financeiro"></div>
           </div>
 
-          <!-- Operacional (required) -->
-          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-operacional">
-            <div class="flex flex-col items-center text-center gap-2">
-              <svg class="w-8 h-8 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <p class="text-sm font-medium theme-text">Logs Operacionais <span class="theme-text-secondary font-normal">(CSV)</span></p>
-              <p class="text-xs theme-text-muted">Arraste o arquivo ou clique para selecionar</p>
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-danger-bg); color: var(--color-danger);">Obrigatório</span>
+          <!-- Operacional -->
+          <div class="dropzone rounded-2xl p-6 sm:p-8 text-center card-border" id="drop-operacional" style="border-style: dashed;">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background: var(--primary-light);">
+                <svg class="w-6 h-6" style="color: var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <div>
+                <p class="text-base font-semibold" style="color: var(--text);">Logs Operacionais</p>
+                <p class="text-xs mt-0.5" style="color: var(--text-muted);">Produção, refugo, horas de máquina</p>
+              </div>
+              <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background: var(--danger-bg); color: var(--danger);">Obrigatório</span>
+              <p class="text-xs" style="color: var(--text-muted);">Clique ou arraste o CSV aqui</p>
             </div>
             <input type="file" id="file_operacional" name="file_operacional" accept=".csv" class="hidden">
-            <div class="file-list mt-3" id="file-list-operacional"></div>
+            <div class="file-list" id="file-list-operacional"></div>
           </div>
 
-          <!-- BOM (optional) -->
-          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-bom">
-            <div class="flex flex-col items-center text-center gap-2">
-              <svg class="w-8 h-8 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-              <p class="text-sm font-medium theme-text">BOM / Ficha Técnica</p>
-              <p class="text-xs theme-text-muted">CSV ou Excel · Opcional</p>
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-warning-bg); color: var(--color-warning);">Opcional</span>
+          <!-- BOM -->
+          <div class="dropzone rounded-2xl p-6 sm:p-8 text-center card-border" id="drop-bom" style="border-style: dashed;">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background: var(--bg-card-hover);">
+                <svg class="w-6 h-6" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              </div>
+              <div>
+                <p class="text-base font-semibold" style="color: var(--text);">BOM / Ficha Técnica</p>
+                <p class="text-xs mt-0.5" style="color: var(--text-muted);">Estrutura dos produtos</p>
+              </div>
+              <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background: var(--warning-bg); color: var(--warning);">Opcional</span>
+              <p class="text-xs" style="color: var(--text-muted);">CSV ou Excel</p>
             </div>
             <input type="file" id="bom" name="bom" accept=".csv,.xls,.xlsx" class="hidden">
-            <div class="file-list mt-3" id="file-list-bom"></div>
+            <div class="file-list" id="file-list-bom"></div>
           </div>
 
-          <!-- Budget (optional) -->
-          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-budget">
-            <div class="flex flex-col items-center text-center gap-2">
-              <svg class="w-8 h-8 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <p class="text-sm font-medium theme-text">Budget / Orçamento</p>
-              <p class="text-xs theme-text-muted">CSV ou Excel · Opcional</p>
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-warning-bg); color: var(--color-warning);">Opcional</span>
+          <!-- Budget -->
+          <div class="dropzone rounded-2xl p-6 sm:p-8 text-center card-border" id="drop-budget" style="border-style: dashed;">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background: var(--bg-card-hover);">
+                <svg class="w-6 h-6" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <p class="text-base font-semibold" style="color: var(--text);">Budget / Orçamento</p>
+                <p class="text-xs mt-0.5" style="color: var(--text-muted);">Metas e orçamento do período</p>
+              </div>
+              <span class="text-xs font-semibold px-3 py-1 rounded-full" style="background: var(--warning-bg); color: var(--warning);">Opcional</span>
+              <p class="text-xs" style="color: var(--text-muted);">CSV ou Excel</p>
             </div>
             <input type="file" id="budget" name="budget" accept=".csv,.xls,.xlsx" class="hidden">
-            <div class="file-list mt-3" id="file-list-budget"></div>
+            <div class="file-list" id="file-list-budget"></div>
           </div>
 
         </div>
 
         <!-- Observações -->
         <div class="mt-6">
-          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-observacoes" style="max-width: 100%;">
-            <div class="flex items-center gap-3">
-              <svg class="w-6 h-6 theme-text-muted flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium theme-text">Observações / Shift Notes <span class="theme-text-secondary font-normal">(TXT)</span></p>
-                <p class="text-xs theme-text-muted">Arraste ou clique para selecionar · Opcional</p>
+          <div class="dropzone rounded-2xl p-5 card-border" id="drop-observacoes" style="border-style: dashed;">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background: var(--bg-card-hover);">
+                <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
               </div>
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-warning-bg); color: var(--color-warning);">Opcional</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold" style="color: var(--text);">Observações / Shift Notes <span class="font-normal" style="color: var(--text-muted);">(TXT)</span></p>
+              </div>
+              <span class="text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0" style="background: var(--warning-bg); color: var(--warning);">Opcional</span>
             </div>
             <input type="file" id="observacoes" name="observacoes" accept=".txt" class="hidden">
             <div class="file-list mt-2" id="file-list-observacoes"></div>
@@ -255,24 +388,23 @@
         </div>
 
         <!-- Custos Fixos -->
-        <div class="mt-6">
-          <label for="custos_fixos" class="block text-sm font-medium theme-text mb-1.5">Custos Fixos (R$)</label>
+        <div class="mt-8">
+          <label for="custos_fixos" class="block text-sm font-semibold mb-2" style="color: var(--text);">Custos Fixos (R$)</label>
           <div class="relative max-w-xs">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-sm theme-text-muted">R$</span>
+            <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-sm" style="color: var(--text-muted);">R$</span>
             <input type="number" id="custos_fixos" name="custos_fixos" step="0.01" min="0" value="30000.00"
-                   class="block w-full pl-9 pr-4 py-2.5 rounded-lg border theme-border theme-surface theme-text text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-shadow">
+                   class="block w-full pl-10 pr-4 py-3 rounded-xl border text-sm transition-shadow focus:outline-none focus:ring-2" style="background: var(--bg-card); border-color: var(--border); color: var(--text);">
           </div>
         </div>
 
         <!-- Submit -->
-        <div class="mt-8 flex flex-col sm:flex-row items-center gap-4">
-          <button type="submit" id="btn-analisar"
-                  class="theme-accent-bg theme-accent-bg-hover text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-accent)] disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2 text-base">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            <span id="btn-text">Analisar</span>
+        <div class="mt-10 flex flex-col sm:flex-row items-center gap-4">
+          <button type="submit" id="btn-analisar" class="btn btn-primary text-base px-10 py-3.5 w-full sm:w-auto">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span id="btn-text">Executar Análise</span>
             <span id="btn-spinner" class="hidden"><span class="spinner"></span></span>
           </button>
-          <p id="form-status" class="text-sm theme-text-secondary"></p>
+          <p id="form-status" class="text-sm" style="color: var(--text-muted);"></p>
         </div>
       </form>
     </section>
@@ -282,86 +414,111 @@
 
       <!-- KPI Dashboard -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6" id="kpi-grid">
-        <!-- Ponto de Equilíbrio -->
-        <div class="kpi-card rounded-xl p-6 slide-in hover-lift" style="animation-delay: 0s;" data-tooltip="Faturamento mínimo para cobrir todos os custos">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium theme-text-secondary has-tooltip" data-tooltip="Valor que a empresa precisa faturar para não ter prejuízo">Ponto de Equilíbrio</span>
-            <span class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--color-accent-light);">
-              <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="card card-ring card-hover p-6 sm:p-7 slide-in" style="animation-delay: 0s;" data-tip="Faturamento mínimo para cobrir todos os custos">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Ponto de Equilíbrio</p>
+            </div>
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center tooltip" style="background: var(--primary-light);" data-tip="Break-even mensal">
+              <svg class="w-5 h-5" style="color: var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </span>
           </div>
-          <p class="text-3xl font-bold theme-text" id="kpi-equilibrio">—</p>
-          <p class="text-xs theme-text-muted mt-2">Faturamento mínimo necessário</p>
+          <p class="text-3xl sm:text-4xl font-extrabold tracking-tight" style="color: var(--text);" id="kpi-equilibrio">—</p>
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: var(--primary-light); color: var(--primary);">break-even</span>
+            <span class="text-xs" style="color: var(--text-muted);">faturamento mínimo</span>
+          </div>
         </div>
 
-        <!-- Margem Média -->
-        <div class="kpi-card rounded-xl p-6 slide-in hover-lift" style="animation-delay: .1s;" data-tooltip="Percentual médio de margem sobre o preço de venda">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium theme-text-secondary has-tooltip" data-tooltip="Quanto sobra do preço após custos variáveis">Margem Média</span>
-            <span class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--color-success-bg);">
-              <svg class="w-5 h-5" style="color: var(--color-success);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        <div class="card card-ring card-hover p-6 sm:p-7 slide-in" style="animation-delay: .1s;" data-tip="Percentual médio de margem sobre o preço de venda">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Margem Média</p>
+            </div>
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center tooltip" style="background: var(--success-bg);" data-tip="Contribuição média por produto">
+              <svg class="w-5 h-5" style="color: var(--success);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
             </span>
           </div>
-          <p class="text-3xl font-bold theme-text" id="kpi-margem">—</p>
-          <p class="text-xs theme-text-muted mt-2">Margem de contribuição média</p>
+          <p class="text-3xl sm:text-4xl font-extrabold tracking-tight" style="color: var(--text);" id="kpi-margem">—</p>
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: var(--success-bg); color: var(--success);">margem</span>
+            <span class="text-xs" style="color: var(--text-muted);">contribuição média</span>
+          </div>
         </div>
 
-        <!-- Custo de Refugo -->
-        <div class="kpi-card rounded-xl p-6 slide-in hover-lift" style="animation-delay: .2s;" data-tooltip="Custo total com materiais refugados e paradas de máquina">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium theme-text-secondary has-tooltip" data-tooltip="Soma de todo desperdício no período analisado">Custo de Refugo</span>
-            <span class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--color-warning-bg);">
-              <svg class="w-5 h-5" style="color: var(--color-warning);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        <div class="card card-ring card-hover p-6 sm:p-7 slide-in" style="animation-delay: .2s;" data-tip="Custo total com materiais refugados e paradas de máquina">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Custo de Refugo</p>
+            </div>
+            <span class="w-9 h-9 rounded-xl flex items-center justify-center tooltip" style="background: var(--warning-bg);" data-tip="Desperdício total no período">
+              <svg class="w-5 h-5" style="color: var(--warning);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
             </span>
           </div>
-          <p class="text-3xl font-bold theme-text" id="kpi-refugo">—</p>
-          <p class="text-xs theme-text-muted mt-2">Custo total de desperdícios</p>
+          <p class="text-3xl sm:text-4xl font-extrabold tracking-tight" style="color: var(--text);" id="kpi-refugo">—</p>
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: var(--warning-bg); color: var(--warning);">desperdício</span>
+            <span class="text-xs" style="color: var(--text-muted);">custo total</span>
+          </div>
         </div>
       </div>
 
       <!-- Charts -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="theme-surface rounded-xl border theme-border shadow-sm p-6 hover-lift">
-          <h3 class="text-sm font-medium theme-text mb-4 has-tooltip" data-tooltip="Proporção entre custos variáveis, fixos e desperdício">Distribuição de Custos</h3>
+        <div class="card card-ring card-hover p-6 sm:p-7">
+          <h3 class="text-sm font-semibold mb-1 tooltip" style="color: var(--text);" data-tip="Proporção entre custos variáveis, fixos e desperdício">Distribuição de Custos</h3>
+          <p class="text-xs mb-5" style="color: var(--text-muted);">Variável vs Fixo vs Refugo</p>
           <canvas id="chart-donut"></canvas>
         </div>
-        <div class="theme-surface rounded-xl border theme-border shadow-sm p-6 hover-lift">
-          <h3 class="text-sm font-medium theme-text mb-4 has-tooltip" data-tooltip="Os 5 produtos que mais geram margem absoluta">Top Produtos por Margem</h3>
+        <div class="card card-ring card-hover p-6 sm:p-7">
+          <h3 class="text-sm font-semibold mb-1 tooltip" style="color: var(--text);" data-tip="Os 5 produtos que mais geram margem absoluta">Top Produtos por Margem</h3>
+          <p class="text-xs mb-5" style="color: var(--text-muted);">Maiores contribuições do período</p>
           <canvas id="chart-bar"></canvas>
         </div>
       </div>
 
       <!-- Report -->
-      <div class="theme-surface rounded-xl border theme-border shadow-sm overflow-hidden hover-lift">
-        <div class="px-6 sm:px-8 py-5 border-b theme-border flex items-center justify-between flex-wrap gap-3">
+      <div class="card card-ring overflow-hidden">
+        <div class="px-6 sm:px-8 py-5 border-b flex items-center justify-between flex-wrap gap-3" style="border-color: var(--border);">
           <div class="flex items-center gap-2">
-            <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <h3 class="text-lg font-semibold theme-text">Relatório de Análise</h3>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: var(--primary-light);">
+              <svg class="w-4 h-4" style="color: var(--primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <h3 class="text-base font-bold" style="color: var(--text);">Relatório de Análise</h3>
           </div>
-          <div class="flex gap-3">
-            <a href="/download/excel" class="btn-download" id="btn-download-excel">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              Download Excel
+          <div class="flex gap-2">
+            <a href="/download/excel" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:scale-105" style="background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border);" id="btn-download-excel">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Excel
             </a>
-            <a href="/download/html" class="btn-download" id="btn-download-html">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              Download HTML
+            <a href="/download/html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:scale-105" style="background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border);" id="btn-download-html">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              HTML
             </a>
           </div>
         </div>
         <div class="p-6 sm:p-8" id="relatorio-conteudo">
-          <p class="theme-text-secondary text-sm italic">Após a análise, o relatório completo aparecerá aqui.</p>
+          <p class="text-sm italic" style="color: var(--text-muted);">Após a análise, o relatório completo aparecerá aqui.</p>
         </div>
       </div>
     </section>
+
   </main>
 
   <!-- ============ FOOTER ============ -->
-  <footer class="border-t theme-border mt-16 py-8">
-    <p class="text-center text-xs theme-text-muted">Custo Certo AI &mdash; Plataforma de Análise de Custos Industriais</p>
+  <footer class="border-t" style="border-color: var(--border);">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 py-10">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-xs" style="color: var(--text-muted);">Custo Certo AI &mdash; Plataforma de Análise de Custos Industriais</p>
+        <div class="flex items-center gap-4">
+          <span class="text-xs" style="color: var(--text-muted);">Feito com</span>
+          <svg class="w-4 h-4" style="color: var(--danger);" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <span class="text-xs" style="color: var(--text-muted);">Python + Flask + IA</span>
+        </div>
+      </div>
+    </div>
   </footer>
 
-  <script src="/static/chart.umd.min.js"></script>
   <script>
     (function() {
       'use strict';
@@ -386,7 +543,7 @@
       function setTheme(theme) {
         if (theme === 'dark') {
           html.classList.add('dark');
-          thumb.style.transform = 'translateX(24px)';
+          thumb.style.transform = 'translateX(22px)';
           icon.innerHTML = '<path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>';
           icon.style.color = '#f59e0b';
         } else {
@@ -405,14 +562,30 @@
       });
 
       // ========================
+      // STEPPER
+      // ========================
+      function updateStepper(active) {
+        document.querySelectorAll('#progress-steps .step').forEach(function(el) {
+          var num = parseInt(el.dataset.step);
+          el.classList.remove('active', 'done');
+          if (num < active) {
+            el.classList.add('done');
+          } else if (num === active) {
+            el.classList.add('active');
+          }
+        });
+        var pct = Math.min(100, Math.max(0, ((active - 1) / 3) * 100));
+        document.getElementById('progress-fill').style.width = pct + '%';
+      }
+
+      // ========================
       // DRAG & DROP
       // ========================
       const dropZones = document.querySelectorAll('.dropzone');
-      dropZones.forEach(zone => {
+      dropZones.forEach(function(zone) {
         const input = zone.querySelector('input[type="file"]');
         const fileList = zone.querySelector('.file-list');
 
-        // Click to open file picker
         zone.addEventListener('click', function(e) {
           if (e.target.closest('.file-chip button')) return;
           input.click();
@@ -422,15 +595,14 @@
           updateFileChips(input, fileList);
         });
 
-        // Drag events
-        ['dragenter', 'dragover'].forEach(evt => {
+        ['dragenter', 'dragover'].forEach(function(evt) {
           zone.addEventListener(evt, function(e) {
             e.preventDefault();
             e.stopPropagation();
             zone.classList.add('dragover');
           });
         });
-        ['dragleave', 'drop'].forEach(evt => {
+        ['dragleave', 'drop'].forEach(function(evt) {
           zone.addEventListener(evt, function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -446,17 +618,25 @@
         });
       });
 
+      function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+      }
+
       function updateFileChips(input, container) {
         container.innerHTML = '';
         const files = input.files;
         if (!files || !files.length) return;
-        for (let i = 0; i < files.length; i++) {
-          const f = files[i];
-          const chip = document.createElement('span');
+        for (var i = 0; i < files.length; i++) {
+          var f = files[i];
+          var chip = document.createElement('div');
           chip.className = 'file-chip';
-          chip.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'
-            + '<span>' + escapeHtml(f.name) + '</span>'
-            + '<button type="button" data-input="' + escapeHtml(input.id) + '" aria-label="Remover arquivo">&times;</button>';
+          chip.innerHTML = '<svg class="w-4 h-4 chip-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>'
+            + '<span class="font-medium">' + escapeHtml(f.name) + '</span>'
+            + '<span class="chip-size">' + formatFileSize(f.size) + '</span>'
+            + '<span class="text-xs chip-success">Carregado</span>'
+            + '<button type="button" data-input="' + escapeHtml(input.id) + '" aria-label="Remover">&times;</button>';
           container.appendChild(chip);
           chip.querySelector('button').addEventListener('click', function(e) {
             e.stopPropagation();
@@ -479,7 +659,6 @@
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        // Validate required files
         const finInput = document.getElementById('file_financeiro');
         const opInput = document.getElementById('file_operacional');
         if (!finInput.files || !finInput.files.length) {
@@ -491,13 +670,13 @@
           return;
         }
 
-        // Disable button, show spinner
         btn.disabled = true;
-        btnText.textContent = 'Analisando...';
+        btnText.textContent = 'Executando IA...';
         btnSpinner.classList.remove('hidden');
         formStatus.textContent = 'Processando dados...';
         resultsSection.classList.remove('visible');
         resultsSection.style.display = 'none';
+        updateStepper(2);
 
         const fd = new FormData(form);
 
@@ -510,29 +689,31 @@
           }
 
           if (data.success) {
+            updateStepper(3);
             renderKPIs(data.kpis);
             renderReport(data.relatorio_html);
             resultsSection.style.display = 'block';
-            setTimeout(() => resultsSection.classList.add('visible'), 50);
-            formStatus.textContent = 'Análise concluída com sucesso!';
-            formStatus.style.color = 'var(--color-success)';
+            setTimeout(function() { resultsSection.classList.add('visible'); updateStepper(4); }, 50);
+            formStatus.textContent = 'Análise concluída!';
+            formStatus.style.color = 'var(--success)';
           } else {
             throw new Error(data.error || 'Resposta inesperada do servidor');
           }
         } catch (err) {
           showError(err.message);
           formStatus.textContent = '';
+          updateStepper(1);
         } finally {
           btn.disabled = false;
-          btnText.textContent = 'Analisar';
+          btnText.textContent = 'Executar Análise';
           btnSpinner.classList.add('hidden');
         }
       });
 
       function renderKPIs(kpis) {
-        const equilibrio = document.getElementById('kpi-equilibrio');
-        const margem = document.getElementById('kpi-margem');
-        const refugo = document.getElementById('kpi-refugo');
+        var equilibrio = document.getElementById('kpi-equilibrio');
+        var margem = document.getElementById('kpi-margem');
+        var refugo = document.getElementById('kpi-refugo');
 
         equilibrio.textContent = 'R$ ' + (kpis.ponto_equilibrio || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         margem.textContent = (kpis.margem_media || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
@@ -542,12 +723,10 @@
       }
 
       function renderCharts(kpis) {
-        const isDark = html.classList.contains('dark');
-        const textColor = isDark ? '#94a3b8' : '#475569';
-        const gridColor = isDark ? '#334155' : '#e2e8f0';
+        var isDark = html.classList.contains('dark');
+        var textColor = isDark ? '#94a3b8' : '#475569';
 
-        // Donut chart
-        const ctxDonut = document.getElementById('chart-donut');
+        var ctxDonut = document.getElementById('chart-donut');
         if (!ctxDonut) return;
         if (chartDonut) chartDonut.destroy();
         chartDonut = new Chart(ctxDonut, {
@@ -575,11 +754,10 @@
           }
         });
 
-        // Bar chart
-        const ctxBar = document.getElementById('chart-bar');
+        var ctxBar = document.getElementById('chart-bar');
         if (!ctxBar) return;
         if (chartBar) chartBar.destroy();
-        const produtos = kpis.top_produtos || [];
+        var produtos = kpis.top_produtos || [];
         chartBar = new Chart(ctxBar, {
           type: 'bar',
           data: {
@@ -600,7 +778,7 @@
             scales: {
               x: {
                 ticks: { color: textColor },
-                grid: { color: gridColor }
+                grid: { color: isDark ? '#1e293b' : '#e2e8f0' }
               },
               y: {
                 ticks: { color: textColor },
@@ -612,26 +790,26 @@
       }
 
       function renderReport(htmlContent) {
-        const container = document.getElementById('relatorio-conteudo');
+        var container = document.getElementById('relatorio-conteudo');
         if (htmlContent && htmlContent.trim()) {
           container.innerHTML = htmlContent;
         } else {
-          container.innerHTML = '<p class="theme-text-secondary text-sm italic">Nenhum relatório disponível.</p>';
+          container.innerHTML = '<p class="text-sm italic" style="color: var(--text-muted);">Nenhum relatório disponível.</p>';
         }
       }
 
       function showError(msg) {
-        const existing = document.querySelector('.error-toast');
+        var existing = document.querySelector('.error-toast');
         if (existing) existing.remove();
-        const toast = document.createElement('div');
+        var toast = document.createElement('div');
         toast.className = 'error-toast';
         toast.innerHTML = '<div class="flex items-center gap-2"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>' + escapeHtml(msg) + '</span></div>';
         document.body.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; setTimeout(() => toast.remove(), 300); }, 5000);
+        setTimeout(function() { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; setTimeout(function() { toast.remove(); }, 300); }, 5000);
       }
 
       function escapeHtml(str) {
-        const div = document.createElement('div');
+        var div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
       }
