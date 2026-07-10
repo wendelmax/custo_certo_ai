@@ -2,6 +2,8 @@
 
 O **Custo Certo** é um ecossistema de agentes autônomos baseado em IA projetado para realizar análises profundas de controladoria industrial. O sistema lê planilhas de dados financeiros e operacionais de uma fábrica, executa cálculos matemáticos de exatidão de custos (margens, ponto de equilíbrio, custeio por absorção e custos de desperdício) e orquestra uma equipe de agentes cognitivos para gerar pareceres estratégicos C-Level em formato de planilhas Excel formatadas e relatórios HTML/Markdown.
 
+O sistema também possui uma **interface web local** (Flask + TailwindCSS) com dashboard interativo, upload drag-and-drop e visualização de relatórios diretamente no navegador.
+
 ---
 
 ## 🚀 Funcionalidades Principais
@@ -19,22 +21,36 @@ O **Custo Certo** é um ecossistema de agentes autônomos baseado em IA projetad
 
 ## 📋 Pré-requisitos e Instalação
 
+### Windows (PowerShell) — Instalação Automática
+
+Em uma máquina Windows **sem Python instalado**, execute no PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/wendelmax/custo_certo_ai/main/install.ps1 | iex
+```
+
+O instalador baixa tudo automaticamente:
+- Projeto do GitHub
+- **Python 3.12 portátil** (não instala no sistema, apenas extrai)
+- Pip e todas as dependências
+- Cria atalho na **Área de Trabalho** e **Menu Iniciar**
+
+Após a instalação, é só clicar no atalho `Custo Certo AI` para iniciar.
+
+### Linux / macOS (Python já instalado)
+
 O sistema roda em Python 3.10+ (compatível com Python 3.14).
 
-### 1. Instalar as dependências
-Instale as bibliotecas necessárias usando o `pip`:
+#### 1. Instalar as dependências
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configurar Variáveis de Ambiente
-Crie um arquivo `.env` na raiz do projeto e configure a chave de API da IA. O sistema prioriza o **Google Gemini** e possui fallback para a **OpenAI**:
+#### 2. Configurar Variáveis de Ambiente
+Crie um arquivo `.env` na raiz do projeto:
 
 ```env
-# Chave da API do Google Gemini (Recomendado)
 GEMINI_API_KEY=sua_chave_gemini_aqui
-
-# Chave da API da OpenAI (Fallback)
 OPENAI_API_KEY=sua_chave_openai_aqui
 ```
 
@@ -51,7 +67,19 @@ O sistema consome dois arquivos na pasta `data/`:
 
 ## ⚙️ Como Executar a Aplicação
 
-Para iniciar o diagnóstico de controladoria fabril, basta executar o ponto de entrada principal:
+### Interface Web (Recomendado)
+
+Inicia um servidor web local com dashboard interativo:
+
+```bash
+python3 app.py
+```
+
+Acesse `http://localhost:5000` no navegador. Faça upload dos CSVs financeiro e operacional, configure os custos fixos, e veja os resultados com KPIs e relatório executivo.
+
+### Linha de Comando (CLI)
+
+Para executar o pipeline completo via terminal:
 
 ```bash
 python3 main.py
@@ -67,7 +95,7 @@ Ao término da execução, três arquivos serão criados na raiz do projeto:
 
 ## 🧪 Executando os Testes Automatizados
 
-O projeto possui uma suíte completa de **24 testes unitários e de integração** para garantir a segurança dos cálculos e das exportações.
+O projeto possui uma suíte completa de **27 testes unitários e de integração** para garantir a segurança dos cálculos, das exportações e da interface web.
 
 Para rodar todos os testes:
 ```bash
@@ -83,3 +111,7 @@ O sistema é construído de forma modular para evitar alucinações matemáticas
 *   **`src/custom_crew.py`**: Orquestrador leve compatível com as versões mais recentes do Python (3.14+), evitando os conflitos de dependência do `crewai` nativo.
 *   **`src/exportador.py`**: Geração de planilhas usando `openpyxl` aplicando estilos personalizados de cores corporativas e formatação de números.
 *   **`converter_relatorio.py`**: Conversor Markdown para HTML estruturado para e-mail corporativo (CSS inline).
+*   **`app.py`**: Servidor web Flask com endpoints para upload, análise e download de relatórios.
+*   **`templates/index.html`**: Interface single-page responsiva com TailwindCSS v4, dark/light mode e drag-and-drop.
+*   **`run.ps1`**: Launcher PowerShell para Windows que baixa Python portátil e inicia o servidor.
+*   **`install.ps1`**: Instalador PowerShell one-line que configura tudo automaticamente.
