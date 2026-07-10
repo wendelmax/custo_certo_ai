@@ -35,8 +35,10 @@ Fora de escopo (adiado por decisão do usuário): sidebar como app-shell multi-v
   - Normaliza `categoria` (`strip().lower()`, remove acentos) e casa contra dois conjuntos de aliases:
     - Margem: `{"margem", "margem de contribuição", "margem de contribuicao"}`
     - Refugo: `{"refugo", "custo de refugo", "perdas"}`
-  - Para cada match, calcula `pct = (real - orçado) / orçado * 100` (proteger divisão por zero → retorna `None` para aquela chave).
-  - Retorna `{'margem': {'pct': float, 'direcao': 'up'|'down'} | None, 'refugo': {...} | None}`.
+  - **Importante:** a coluna `real` do próprio CSV de budget é ignorada — o "valor real" da comparação é o argumento já computado pela análise (`margem_media` ou `custo_refugo_total`, calculados a partir de `financeiro`/`operacional`), não um número duplicado dentro do upload de budget. Só a coluna `orçado` da linha casada é lida do arquivo de budget.
+  - Para cada match, calcula `pct = (valor_computado - orçado) / orçado * 100` (proteger divisão por zero → retorna `None` para aquela chave).
+  - Margem é "maior é melhor" (favorável quando `pct >= 0`); Refugo é "menor é melhor" (favorável quando `pct <= 0`) — a função calcula esse booleano `favoravel` para cada chave, para o frontend colorir o badge sem precisar saber essa regra de negócio.
+  - Retorna `{'margem': {'pct': float, 'direcao': 'up'|'down', 'favoravel': bool} | None, 'refugo': {...} | None}`.
   - Se o arquivo de budget não existe/não foi enviado, ou não há nenhum match de categoria, retorna `{'margem': None, 'refugo': None}` — sem lançar exceção (feature é best-effort, não pode quebrar a análise principal).
 - Em `app.py`, após montar o dict `kpis` (linha ~105), se `caminhos_opcionais.get('budget')` existir, chamar `calcular_tendencia_budget(...)` e anexar:
   ```python
@@ -49,7 +51,7 @@ Fora de escopo (adiado por decisão do usuário): sidebar como app-shell multi-v
 ### Frontend — `templates/index.html`
 
 - No card de KPI "Margem Média" (linha ~433-447) e "Custo de Refugo" (linha ~449-463), adicionar um `<span>` de tendência abaixo do valor, escondido por padrão (sem conteúdo até `renderKPIs` popular).
-- Em `renderKPIs(kpis)` (linha ~713), se `kpis.trend_margem`/`kpis.trend_refugo` existir e não for `null`, popular o span com seta (`↑`/`↓` conforme `direcao`) + `pct` formatado + texto "vs. orçado". Se ausente/`null`, span permanece vazio (mesmo comportamento visual de hoje).
+- Em `renderKPIs(kpis)` (linha ~713), se `kpis.trend_margem`/`kpis.trend_refugo` existir e não for `null`, popular o span com seta (`↑`/`↓` conforme `direcao`) + `pct` formatado + texto "vs. orçado". A cor (verde/vermelho) usa o campo `favoravel` vindo do backend, não a seta diretamente — assim "menos refugo" aparece em verde mesmo sendo uma seta para baixo. Se ausente/`null`, span permanece vazio (mesmo comportamento visual de hoje).
 
 ## 3. Sidebar de navegação (âncoras)
 
@@ -88,7 +90,7 @@ Fora de escopo (adiado por decisão do usuário): sidebar como app-shell multi-v
 
 - Como os valores de `@theme` apontam para as CSS custom properties já existentes em `:root`/`html.dark` (linhas 16-66), o toggle de tema (`html.classList.add('dark')`, linha ~545) continua funcionando sem precisar de `@custom-variant dark` — não há variant `dark:` novo sendo introduzido.
 - Utilities novas disponíveis: `bg-card`, `text-ink`, `text-ink-secondary`, `text-ink-muted`, `bg-primary`, `text-primary`, `rounded-card`, `shadow-card`.
-- **Escopo de aplicação:** somente nas seções já tocadas por este spec — header, hero, form section, KPI cards, sidebar nova. Substituir os `style="color: var(--text)"` / `style="background: var(--bg-card)"` inline por essas classes **apenas nesses trechos**.
+- **Escopo de aplicação (revisado):** o header/hero/form-section/KPI cards existentes têm ~63 atributos `style="..."` inline distintos (cores/fundos/bordas combinados) — convertê-los todos tem o mesmo tamanho e risco de regressão visual da opção "migração total do arquivo" já descartada. Por isso, os tokens `@theme` são usados apenas no **markup novo** criado por este spec: a sidebar (seção 3) e os badges de tendência dos KPIs (seção 2). O header/hero/form-section/KPI cards existentes **continuam com `style=""` inline por enquanto** — migram numa entrega futura dedicada, fora deste escopo.
 - Relatório (`#relatorio-conteudo` e seu conteúdo), toast de erro (`.error-toast`) e file-chip (`.file-chip`) **permanecem em CSS vars puro** — fora de escopo desta entrega.
 
 ## Testes / verificação

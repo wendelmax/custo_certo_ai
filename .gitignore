@@ -35,6 +35,7 @@ Thumbs.db
 .superpowers/
 .sdd/
 opencode.json
+.claude
 
 # Runtime generated files
 uploads/
