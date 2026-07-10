@@ -10,18 +10,26 @@ $PythonVersion = "3.12.3"
 
 $InstallDir = "$env:USERPROFILE\custo_certo"
 $Providers = @(
-    @{ Name = "Google Gemini";         Env = "GEMINI_API_KEY";      Desc = "Recomendado" }
-    @{ Name = "OpenAI";                Env = "OPENAI_API_KEY";      Desc = "ChatGPT / GPT-4" }
-    @{ Name = "Anthropic Claude";      Env = "ANTHROPIC_API_KEY";   Desc = "Claude Sonnet / Haiku" }
-    @{ Name = "Groq";                  Env = "GROQ_API_KEY";        Desc = "Llama / Mixtral via Groq" }
-    @{ Name = "OpenRouter";            Env = "OPENROUTER_API_KEY";  Desc = "Multi-modelo" }
-    @{ Name = "Azure OpenAI";          Env = "AZURE_OPENAI_API_KEY"; Desc = "Requer endpoint + versao" }
-    @{ Name = "Amazon Bedrock";        Env = "AWS_ACCESS_KEY_ID";   Desc = "Claude via AWS" }
-    @{ Name = "Hugging Face";          Env = "HF_TOKEN";            Desc = "Modelos open-source" }
-    @{ Name = "Cerebras";              Env = "CEREBRAS_API_KEY";    Desc = "" }
-    @{ Name = "Moonshot";              Env = "MOONSHOT_API_KEY";    Desc = "" }
-    @{ Name = "DeepSeek (Alibaba SG)"; Env = "ALIBABA_SINGAPORE_API_KEY"; Desc = "" }
-    @{ Name = "DeepSeek (Alibaba US)"; Env = "ALIBABA_US_API_KEY";  Desc = "" }
+    @{ Name = "Google Gemini";         Env = "GEMINI_API_KEY";              Tier = "GRATIS";     Url = "https://aistudio.google.com/apikey" }
+    @{ Name = "Groq";                  Env = "GROQ_API_KEY";                Tier = "GRATIS";     Url = "https://console.groq.com/keys" }
+    @{ Name = "Hugging Face";          Env = "HF_TOKEN";                    Tier = "GRATIS";     Url = "https://huggingface.co/settings/tokens" }
+    @{ Name = "Cerebras";              Env = "CEREBRAS_API_KEY";            Tier = "GRATIS";     Url = "https://inference.cerebras.ai/" }
+    @{ Name = "DeepSeek (Alibaba US)"; Env = "ALIBABA_US_API_KEY";         Tier = "GRATIS";     Url = "https://www.alibabacloud.com/" }
+    @{ Name = "Z.ai";                  Env = "ZAI_API_KEY";                Tier = "GRATIS";     Url = "https://z.ai/" }
+    @{ Name = "Synthetic";             Env = "SYNTHETIC_API_KEY";          Tier = "GRATIS";     Url = "https://synthetic.com/" }
+    @{ Name = "Avian";                 Env = "AVIAN_API_KEY";              Tier = "GRATIS";     Url = "https://avian.io/" }
+    @{ Name = "OpenRouter";            Env = "OPENROUTER_API_KEY";         Tier = "GRATIS+PAGO"; Url = "https://openrouter.ai/keys" }
+    @{ Name = "OpenAI";                Env = "OPENAI_API_KEY";             Tier = "PAGO";       Url = "https://platform.openai.com/api-keys" }
+    @{ Name = "Anthropic Claude";      Env = "ANTHROPIC_API_KEY";          Tier = "PAGO";       Url = "https://console.anthropic.com/" }
+    @{ Name = "Azure OpenAI";          Env = "AZURE_OPENAI_API_KEY";       Tier = "PAGO";       Url = "https://portal.azure.com/" }
+    @{ Name = "Amazon Bedrock";        Env = "AWS_ACCESS_KEY_ID";          Tier = "PAGO";       Url = "https://console.aws.amazon.com/bedrock/" }
+    @{ Name = "Moonshot";              Env = "MOONSHOT_API_KEY";           Tier = "PAGO";       Url = "https://platform.moonshot.cn/" }
+    @{ Name = "DeepSeek (Alibaba SG)"; Env = "ALIBABA_SINGAPORE_API_KEY";  Tier = "PAGO";       Url = "https://www.alibabacloud.com/" }
+    @{ Name = "MiniMax";               Env = "MINIMAX_API_KEY";            Tier = "PAGO";       Url = "https://platform.minimaxi.com/" }
+    @{ Name = "Hyper";                 Env = "HYPER_API_KEY";              Tier = "PAGO";       Url = "https://hyper.xyz/" }
+    @{ Name = "Vercel AI Gateway";     Env = "VERCEL_API_KEY";             Tier = "GRATIS+PAGO"; Url = "https://vercel.com/" }
+    @{ Name = "io.net";                Env = "IONET_API_KEY";              Tier = "PAGO";       Url = "https://io.net/" }
+    @{ Name = "OpenCode Zen & Go";     Env = "OPENCODE_API_KEY";           Tier = "PAGO";       Url = "https://opencode.ai/" }
 )
 $RuntimeDir = "$InstallDir\_runtime"
 $PythonDir = "$RuntimeDir\python"
@@ -161,12 +169,19 @@ if (-not $hasCredential) {
     Write-Step "Escolha um provedor para sua chave:" White
     Write-Host ""
 
+    Write-Host "  #  PROVEDOR                       CUSTO             CHAVE EM" -ForegroundColor DarkGray
+    Write-Host "  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――" -ForegroundColor DarkGray
     for ($i = 0; $i -lt $Providers.Count; $i++) {
         $p = $Providers[$i]
-        $desc = if ($p.Desc) { " ($($p.Desc))" } else { "" }
-        Write-Host "  $($i + 1). $($p.Name) - $($p.Env)$desc" -ForegroundColor White
+        switch ($p.Tier) {
+            "GRATIS"      { $tag = " [FREE]"; $color = "Green" }
+            "GRATIS+PAGO" { $tag = " [BOTH]"; $color = "Yellow" }
+            "PAGO"        { $tag = " [PAID]"; $color = "Red" }
+        }
+        Write-Host ("  {0,-2} {1,-30} {2,-16} {3}" -f "$($i+1).", $p.Name, $tag, $p.Url) -ForegroundColor $color
     }
-    Write-Host "  $($Providers.Count + 1). Digitar chave manual (env personalizado)" -ForegroundColor White
+    Write-Host ""
+    Write-Host "  $($Providers.Count + 1). Digitar chave manual (qualquer env)" -ForegroundColor White
     Write-Host ""
 
     $choice = $null
