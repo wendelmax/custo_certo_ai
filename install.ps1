@@ -137,38 +137,37 @@ if ($systemPython) {
     }
 }
 
-# Habilita site-packages
-$pthFile = "$PythonDir\python._pth"
-if (Test-Path $pthFile) {
-    $content = Get-Content $pthFile -Raw
-    if ($content -notmatch '(?m)^import site$') {
-        $content = $content -replace '(?m)^#import site', 'import site'
-        Set-Content -Path $pthFile -Value $content
+# Se for Python portatil, preparar ambiente (site-packages, pip, PATH)
+$isPortable = $PythonExe -like "$PythonDir*"
+
+if ($isPortable) {
+    $pthFile = "$PythonDir\python._pth"
+    if (Test-Path $pthFile) {
+        $content = Get-Content $pthFile -Raw
+        if ($content -notmatch '(?m)^import site$') {
+            $content = $content -replace '(?m)^#import site', 'import site'
+            Set-Content -Path $pthFile -Value $content
+        }
     }
-} else {
-    Write-Step "AVISO: python._pth nao encontrado, criando..." Yellow
-    Set-Content -Path $pthFile -Value "python312.zip`n.`nimport site" -Encoding ASCII
-}
-Write-Step "Python $PythonVersion instalado" Green
+    Write-Step "Python $PythonVersion instalado" Green
 
-# ─── 3. Instalar pip ──────────────────────────────────────────────────────────
-
-Write-Step "Instalando pip..." Yellow
-$getPip = "$RuntimeDir\get-pip.py"
-try {
-    if (Test-Command "curl.exe") {
-        & curl.exe -sL "https://bootstrap.pypa.io/get-pip.py" -o $getPip
-    } else {
-        [System.Net.WebClient]::new().DownloadFile("https://bootstrap.pypa.io/get-pip.py", $getPip)
+    Write-Step "Instalando pip..." Yellow
+    $getPip = "$RuntimeDir\get-pip.py"
+    try {
+        if (Test-Command "curl.exe") {
+            & curl.exe -sL "https://bootstrap.pypa.io/get-pip.py" -o $getPip
+        } else {
+            [System.Net.WebClient]::new().DownloadFile("https://bootstrap.pypa.io/get-pip.py", $getPip)
+        }
+        & $PythonExe $getPip --no-warn-script-location 2>&1 | Out-Null
+        Remove-Item $getPip -Force
+    } catch {
+        Write-Step "Falha ao instalar pip: $_" Red
+        exit 1
     }
-    & $PythonExe $getPip --no-warn-script-location 2>&1 | Out-Null
-    Remove-Item $getPip -Force
-} catch {
-    Write-Step "Falha ao instalar pip: $_" Red
-    exit 1
-}
 
-$env:Path = "$PythonDir;$PythonDir\Scripts;$env:Path"
+    $env:Path = "$PythonDir;$PythonDir\Scripts;$env:Path"
+}
 
 # ─── 4. Instalar dependencias ─────────────────────────────────────────────────
 

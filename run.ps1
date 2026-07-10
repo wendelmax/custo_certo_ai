@@ -39,7 +39,6 @@ foreach ($cmd in @("python.exe", "python3.exe", "python")) {
 if ($PythonExe -and -not $ResetPython) {
     Write-Step "Python encontrado: $PythonExe" Green
 } else {
-    # Tentar cache local primeiro
     $cachedExe = Join-Path $PythonDir "python.exe"
     if (Test-Path $cachedExe -and -not $ResetPython) {
         $PythonExe = $cachedExe
@@ -76,49 +75,47 @@ if ($PythonExe -and -not $ResetPython) {
     }
 }
 
-# ─── Step 2: Enable site-packages ─────────────────────────────────────────────
+# ─── Step 2: Preparar ambiente Python ─────────────────────────────────────────
 
-$pthFile = Join-Path $PythonDir "python._pth"
-if (Test-Path $pthFile) {
-    $content = Get-Content $pthFile -Raw
-    if ($content -notmatch '(?m)^import site$') {
-        $content = $content -replace '(?m)^#import site', 'import site'
-        Set-Content -Path $pthFile -Value $content
-        Write-Step "site-packages habilitado" Green
-    }
-} else {
-    Write-Step "AVISO: python._pth nao encontrado, criando..." Yellow
-    Set-Content -Path $pthFile -Value "python312.zip`n.`nimport site" -Encoding ASCII
-}
+$isPortable = $PythonExe -like "$PythonDir*"
 
-# ─── Step 3: Install pip ──────────────────────────────────────────────────────
-
-$pipScript = Join-Path $PythonDir "Scripts\pip.exe"
-if (-not (Test-Path $pipScript)) {
-    Write-Step "Instalando pip..." Yellow
-    $getPip = Join-Path $RuntimeDir "get-pip.py"
-
-    try {
-        if (Test-CommandAvailable "curl.exe") {
-            & curl.exe -sL "https://bootstrap.pypa.io/get-pip.py" -o $getPip
-        } else {
-            [System.Net.WebClient]::new().DownloadFile("https://bootstrap.pypa.io/get-pip.py", $getPip)
+if ($isPortable) {
+    # ── Apenas para Python portatil: habilitar site-packages ──
+    $pthFile = Join-Path $PythonDir "python._pth"
+    if (Test-Path $pthFile) {
+        $content = Get-Content $pthFile -Raw
+        if ($content -notmatch '(?m)^import site$') {
+            $content = $content -replace '(?m)^#import site', 'import site'
+            Set-Content -Path $pthFile -Value $content
+            Write-Step "site-packages habilitado" Green
         }
-        & $PythonExe $getPip --no-warn-script-location 2>&1 | Out-Null
-        Remove-Item $getPip -Force
-    } catch {
-        Write-Step "Falha ao instalar pip: $_" Red
-        exit 1
     }
-    Write-Step "pip instalado" Green
+
+    # ── Apenas para Python portatil: instalar pip ──
+    $pipScript = Join-Path $PythonDir "Scripts\pip.exe"
+    if (-not (Test-Path $pipScript)) {
+        Write-Step "Instalando pip..." Yellow
+        $getPip = Join-Path $RuntimeDir "get-pip.py"
+        try {
+            if (Test-CommandAvailable "curl.exe") {
+                & curl.exe -sL "https://bootstrap.pypa.io/get-pip.py" -o $getPip
+            } else {
+                [System.Net.WebClient]::new().DownloadFile("https://bootstrap.pypa.io/get-pip.py", $getPip)
+            }
+            & $PythonExe $getPip --no-warn-script-location 2>&1 | Out-Null
+            Remove-Item $getPip -Force
+        } catch {
+            Write-Step "Falha ao instalar pip: $_" Red
+            exit 1
+        }
+        Write-Step "pip instalado" Green
+    }
+
+    # ── PATH so para Python portatil ──
+    $env:Path = "$PythonDir;$PythonDir\Scripts;$env:Path"
 }
 
-# ─── Step 4: Add Python to PATH (session only) ────────────────────────────────
-
-$pythonScripts = Join-Path $PythonDir "Scripts"
-$env:Path = "$PythonDir;$pythonScripts;$env:Path"
-
-# ─── Step 5: Install dependencies ─────────────────────────────────────────────
+# ─── Step 3: Instalar dependencias (sistema ou portatil) ──────────────────────
 
 $reqFile = Join-Path $ProjectRoot "requirements.txt"
 Write-Step "Instalando dependencias..." Yellow
