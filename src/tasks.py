@@ -5,7 +5,9 @@ def criar_tarefa_financeira(agente: Agent, output_financeiro_str: str) -> Task:
         description=(
             f"Analise o seguinte resumo matematico de margens e custeio por absorcao:\n"
             f"{output_financeiro_str}\n\n"
-            f"Organize as informacoes em tabelas organizadas. Identifique os produtos com menores margens e compare como o custo "
+            f"Organize as informacoes em tabelas no formato padrao do Markdown (usando barras verticais e tracos: | Coluna |). "
+            f"NUNCA desenhe tabelas em estilo ASCII art ou usando caracteres de desenho de caixa (como ┌, ─, │). "
+            f"Identifique os produtos com menores margens e compare como o custo "
             f"por absorcao unitario varia de acordo com cada um dos 3 criterios de rateio (Volume, Horas Maquina, Custo Direto)."
         ),
         expected_output="Relatorio com tabelas de margens e comparativo detalhado dos 3 metodos de rateio de custos fixos.",
@@ -32,7 +34,8 @@ def criar_tarefa_diretoria(agente: Agent) -> Task:
             "1. Explicar como as falhas de producao (refugos, paradas) estao diretamente prejudicando as margens de produtos especificos.\n"
             "2. Demonstrar o impacto de se escolher diferentes criterios de rateio de custos (Volume vs. Horas vs. Custos Diretos).\n"
             "3. Propor 3 recomendacoes praticas e acionaveis para a diretoria aumentar a margem ou mitigar os riscos operacionais identificados.\n\n"
-            "Use formatacao elegante em markdown com titulos claros."
+            "Use formatacao elegante em markdown com titulos claros. Para tabelas, SEMPRE utilize o formato padrao do Markdown (usando | e -). "
+            "NUNCA desenhe tabelas em formato ASCII art ou com caracteres de desenho de caixa (como ┌, ─, ┬, ┐, │, etc.)."
         ),
         expected_output="Relatorio Executivo final consolidado em Markdown com analise de sensibilidade de rateio e plano de acao.",
         agent=agente

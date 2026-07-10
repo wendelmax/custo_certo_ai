@@ -13,7 +13,7 @@ from tools import (
     calcular_ponto_equilibrio
 )
 from exportador import exportar_analise_excel
-from converter_relatorio import converter_markdown_para_html_premium
+from converter_relatorio import converter_markdown_para_html_premium, converter_tabelas_ascii_para_markdown
 
 load_dotenv()
 app = Flask(__name__)
@@ -86,7 +86,8 @@ def analisar():
         converter_markdown_para_html_premium("relatorio_controladoria.md", "relatorio_controladoria.html")
 
         import markdown
-        html_resultado = markdown.markdown(resultado, extensions=['tables'])
+        resultado_corrigido = converter_tabelas_ascii_para_markdown(resultado)
+        html_resultado = markdown.markdown(resultado_corrigido, extensions=['tables'])
 
         top_produtos = margens_df.nlargest(5, 'margem_contribuição_total')[
             ['produto_id', 'margem_contribuição_total']

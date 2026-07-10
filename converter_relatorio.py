@@ -1,6 +1,43 @@
 import markdown
 import os
 
+def converter_tabelas_ascii_para_markdown(text: str) -> str:
+    """
+    Detecta tabelas com caracteres de desenho de caixa ASCII (┌, ─, ┬, ┐, │, etc.)
+    e as converte para o formato de tabelas padrão do Markdown para que o renderizador
+    consiga gerar elementos <table> HTML nativos e bonitos.
+    """
+    lines = text.splitlines()
+    new_lines = []
+    
+    for line in lines:
+        stripped = line.strip()
+        # Linha de borda/divisor ASCII
+        is_border = any(c in stripped for c in "┌┬┐├┼┤└┴┘") and all(c in "┌┬┐├┼┤└┴┘─ -" for c in stripped)
+        
+        if is_border:
+            if "├" in stripped or "┼" in stripped:
+                # É a linha divisória pós-cabeçalho. Cria a linha | --- | --- |
+                cols = stripped.count("┼")
+                if "├" in stripped or "│" in stripped:
+                    cols += 1
+                new_lines.append("| " + " | ".join(["---"] * cols) + " |")
+            # Ignora linhas de topo (┌) e fundo (└)
+            continue
+            
+        if "│" in line:
+            # É uma linha de conteúdo. Substituímos '│' por '|'
+            cells = [cell.strip() for cell in line.split("│")]
+            if cells and cells[0] == "":
+                cells = cells[1:]
+            if cells and cells[-1] == "":
+                cells = cells[:-1]
+            new_lines.append("| " + " | ".join(cells) + " |")
+        else:
+            new_lines.append(line)
+            
+    return "\n".join(new_lines)
+
 def converter_markdown_para_html_premium(caminho_md: str, caminho_html: str) -> None:
     if not os.path.exists(caminho_md):
         raise FileNotFoundError(f"Arquivo markdown nao encontrado: {caminho_md}")
@@ -8,7 +45,8 @@ def converter_markdown_para_html_premium(caminho_md: str, caminho_html: str) -> 
     with open(caminho_md, "r", encoding="utf-8") as f:
         text_md = f.read()
         
-    body_html = markdown.markdown(text_md, extensions=['tables'])
+    text_md_corrigido = converter_tabelas_ascii_para_markdown(text_md)
+    body_html = markdown.markdown(text_md_corrigido, extensions=['tables'])
     
     html_completo = f"""<!DOCTYPE html>
 <html lang="pt-BR">

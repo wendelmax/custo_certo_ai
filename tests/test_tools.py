@@ -273,3 +273,32 @@ def test_tool_functions_validate_columns(tmp_path):
         
     with pytest.raises(ValueError):
         analisar_desperdicios_eficiencia(str(csv_file), str(csv_file))
+
+def test_mapear_colunas_csv_com_ia(monkeypatch, tmp_path):
+    from tools import mapear_colunas_csv_com_ia
+    
+    csv_file = tmp_path / "teste_mapeamento.csv"
+    df = pd.DataFrame(columns=["Cod Prod", "Preco unit", "Custo unit", "Despesas unit", "Qtd Vendida"])
+    df.to_csv(csv_file, index=False)
+    
+    colunas_esperadas = ["produto_id", "preco_venda_unitario", "custo_variavel_unitario", "despesas_variaveis_unit", "volume_vendas_mensal"]
+    
+    class MockResponse:
+        text = '{"mappings": [{"real_column": "Cod Prod", "expected_column": "produto_id"}, {"real_column": "Preco unit", "expected_column": "preco_venda_unitario"}, {"real_column": "Custo unit", "expected_column": "custo_variavel_unitario"}, {"real_column": "Despesas unit", "expected_column": "despesas_variaveis_unit"}, {"real_column": "Qtd Vendida", "expected_column": "volume_vendas_mensal"}]}'
+        
+    class MockModels:
+        def generate_content(self, model, contents, config=None):
+            return MockResponse()
+            
+    class MockClient:
+        models = MockModels()
+        
+    monkeypatch.setattr("google.genai.Client", lambda *args, **kwargs: MockClient())
+    
+    # Executa mapeamento
+    mapear_colunas_csv_com_ia(str(csv_file), colunas_esperadas)
+    
+    # Verifica o resultado
+    df_result = pd.read_csv(csv_file)
+    assert list(df_result.columns) == colunas_esperadas
+

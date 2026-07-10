@@ -80,13 +80,13 @@ def test_montar_equipe_com_arquivos_opcionais(monkeypatch, tmp_path):
     caminho_op = os.path.join(os.path.dirname(__file__), "../data/logs_operacionais.csv")
 
     bom_file = tmp_path / "bom.csv"
-    bom_file.write_text("produto_id,material,quantidade\nPROD-001,Aco 50mm,2\nPROD-002,Ferro Fundido,1\n")
+    bom_file.write_text("produto_id,material,quantidade\nPROD-001,Aco 50mm,2\nPROD-002,Ferro Fundido,1\n", encoding="utf-8")
 
     budget_file = tmp_path / "budget.csv"
-    budget_file.write_text("categoria,orçado,real\nMateria Prima,50000,52000\nMao de Obra,30000,28000\n")
+    budget_file.write_text("categoria,orçado,real\nMateria Prima,50000,52000\nMao de Obra,30000,28000\n", encoding="utf-8")
 
     obs_file = tmp_path / "observacoes.txt"
-    obs_file.write_text("Linha de producao A apresentou ruido no eixo principal.\nTurno noturno com 2 operarios ausentes.\n")
+    obs_file.write_text("Linha de producao A apresentou ruido no eixo principal.\nTurno noturno com 2 operarios ausentes.\n", encoding="utf-8")
 
     caminhos_opcionais = {
         "bom": str(bom_file),

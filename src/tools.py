@@ -1,7 +1,104 @@
 import pandas as pd
 import warnings
 
+# Cache global na memória para evitar chamadas de API repetidas para o mesmo arquivo durante a execução do processo
+# Chave: abs_path, Valor: last_mtime
+_ARQUIVOS_MAPEADOS = {}
+
+def mapear_colunas_csv_com_ia(caminho_csv: str, colunas_esperadas: list):
+    """
+    Usa a IA do Gemini para mapear dinamicamente os cabeçalhos reais de um CSV
+    para os cabeçalhos esperados pelo sistema de custos, reescrevendo o arquivo.
+    """
+    import os
+    import json
+    from pydantic import BaseModel, Field
+    from google import genai
+    from google.genai import types
+
+    abs_path = os.path.abspath(caminho_csv)
+    try:
+        mtime = os.path.getmtime(abs_path)
+    except OSError:
+        return
+
+    # Se já tentamos mapear este arquivo (com base no mtime), não repete
+    if _ARQUIVOS_MAPEADOS.get(abs_path) == mtime:
+        return
+
+    try:
+        # 1. Ler cabeçalhos atuais do CSV
+        df = pd.read_csv(caminho_csv)
+    except Exception:
+        # Se falhar ao ler (ex: arquivo vazio ou formato inválido), aborta silenciosamente
+        return
+
+    cabeçalhos_atuais = list(df.columns)
+    
+    # Se for planilha financeira (contém preco_venda_unitario), adiciona nome_produto como mapeável opcional
+    colunas_alvo = list(colunas_esperadas)
+    if "preco_venda_unitario" in colunas_alvo and "nome_produto" not in colunas_alvo:
+        colunas_alvo.append("nome_produto")
+    
+    # Se todos os campos esperados já estiverem presentes, não faz nada
+    if all(col in cabeçalhos_atuais for col in colunas_alvo):
+        _ARQUIVOS_MAPEADOS[abs_path] = mtime
+        return
+
+    # Definir modelos Pydantic estruturados para a API do Gemini
+    class MappingEntry(BaseModel):
+        real_column: str = Field(description="O nome da coluna real na planilha do usuário")
+        expected_column: str = Field(description="O nome correspondente esperado pelo sistema")
+
+    class ColumnMapping(BaseModel):
+        mappings: list[MappingEntry] = Field(description="Lista de associações de colunas")
+
+    prompt = f"""
+    Como um especialista em controladoria e custos industriais, analise os cabeçalhos de uma planilha de dados industriais
+    e faça a correspondência (mapeamento) entre os cabeçalhos reais da planilha e as colunas esperadas pelo sistema.
+    
+    Cabeçalhos Reais na Planilha: {cabeçalhos_atuais}
+    Colunas Esperadas pelo Sistema: {colunas_alvo}
+    
+    Associe apenas os cabeçalhos que possuem forte correlação de significado conceitual. 
+    Se alguma coluna esperada não puder ser encontrada, ignore-a (não invente correspondências fracas).
+    """
+
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-3.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=ColumnMapping,
+            ),
+        )
+        mapping_obj = ColumnMapping.model_validate_json(response.text)
+        
+        mapping_dict = {}
+        for entry in mapping_obj.mappings:
+            # Validar que a coluna real existe no CSV e a esperada é uma das solicitadas
+            if entry.real_column in cabeçalhos_atuais and entry.expected_column in colunas_alvo:
+                mapping_dict[entry.real_column] = entry.expected_column
+        
+        if mapping_dict:
+            df = df.rename(columns=mapping_dict)
+            df.to_csv(caminho_csv, index=False)
+            print(f"[IA Mapper] Mapeamento aplicado em '{os.path.basename(caminho_csv)}': {mapping_dict}")
+    except Exception as e:
+        print(f"[IA Mapper] Falha no mapeamento por IA para '{os.path.basename(caminho_csv)}': {e}")
+    finally:
+        try:
+            # Atualiza o cache com o novo mtime (após modificação do arquivo ou falha)
+            _ARQUIVOS_MAPEADOS[abs_path] = os.path.getmtime(abs_path)
+        except OSError:
+            pass
+
 def validar_colunas_csv(caminho_csv: str, colunas_esperadas: list):
+    # Executa o mapeador dinâmico antes de validar
+    mapear_colunas_csv_com_ia(caminho_csv, colunas_esperadas)
+    
     df = pd.read_csv(caminho_csv, nrows=0)
     colunas_presentes = set(df.columns)
     colunas_faltantes = [col for col in colunas_esperadas if col not in colunas_presentes]
@@ -12,6 +109,10 @@ def calcular_margem_contribuicao(caminho_csv: str) -> pd.DataFrame:
     validar_colunas_csv(caminho_csv, ["produto_id", "preco_venda_unitario", "custo_variavel_unitario", "despesas_variaveis_unit", "volume_vendas_mensal"])
     
     df = pd.read_csv(caminho_csv)
+    
+    # Garantir que nome_produto exista para exibição (fallback para produto_id se ausente)
+    if "nome_produto" not in df.columns:
+        df["nome_produto"] = df["produto_id"]
     
     cols = ["preco_venda_unitario", "custo_variavel_unitario", "despesas_variaveis_unit", "volume_vendas_mensal"]
     has_nans = False

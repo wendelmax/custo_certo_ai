@@ -59,3 +59,29 @@ def test_converter_markdown_with_tables():
         os.remove(caminho_md)
     if os.path.exists(caminho_html):
         os.remove(caminho_html)
+
+def test_converter_tabelas_ascii_para_markdown():
+    from converter_relatorio import converter_tabelas_ascii_para_markdown
+    
+    ascii_table = """
+    CRITÉRIO DE RATEIO E SEUS IMPACTOS
+    ┌─────────────────────┬─────────────────────────────────┐
+    │ Critério de Rateio  │ Impacto no PROD1                │
+    ├─────────────────────┼─────────────────────────────────┤
+    │ 1. Volume           │ Subestima o consumo de tempo.   │
+    └─────────────────────┴─────────────────────────────────┘
+    """
+    
+    expected_markdown = """
+    CRITÉRIO DE RATEIO E SEUS IMPACTOS
+| Critério de Rateio | Impacto no PROD1 |
+| --- | --- |
+| 1. Volume | Subestima o consumo de tempo. |
+    """
+    
+    result = converter_tabelas_ascii_para_markdown(ascii_table)
+    # Comparar normalizando espaços extras
+    result_lines = [l.strip() for l in result.strip().splitlines()]
+    expected_lines = [l.strip() for l in expected_markdown.strip().splitlines()]
+    assert result_lines == expected_lines
+
