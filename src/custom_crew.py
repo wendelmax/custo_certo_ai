@@ -72,7 +72,7 @@ class Agent:
                 from google import genai
                 client = genai.Client()
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-3.5-flash',
                     contents=prompt,
                     config=dict(system_instruction=system_instruction)
                 )
