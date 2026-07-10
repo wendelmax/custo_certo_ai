@@ -30,3 +30,18 @@ test-venv/
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# AI tooling metadata
+.superpowers/
+.sdd/
+opencode.json
+
+# Runtime generated files
+uploads/
+_runtime/
+analise_de_custos.xlsx
+relatorio_controladoria.md
+relatorio_controladoria.html
+
+# Environment / secrets
+.env
