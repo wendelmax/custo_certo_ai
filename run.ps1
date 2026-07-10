@@ -53,14 +53,17 @@ if ($needPython) {
     }
 
     Write-Step "Extraindo..." Yellow
-    if (Test-CommandAvailable "tar.exe") {
-        & tar.exe -xf $zipPath -C $PythonDir 2>$null
-        if (-not (Test-Path $PythonExe)) {
-            Expand-Archive -Path $zipPath -DestinationPath $PythonDir -Force
-        }
+    $tempExtract = Join-Path $RuntimeDir "_py_extract"
+    New-Item -ItemType Directory -Force -Path $tempExtract | Out-Null
+    Expand-Archive -Path $zipPath -DestinationPath $tempExtract -Force
+    $items = Get-ChildItem -Path $tempExtract
+    if ($items.Count -eq 1 -and $items[0].PSIsContainer) {
+        Get-ChildItem -Path $items[0].FullName | Move-Item -Destination $PythonDir -Force
+        Remove-Item -Recurse -Force $items[0].FullName
     } else {
-        Expand-Archive -Path $zipPath -DestinationPath $PythonDir -Force
+        Get-ChildItem -Path $tempExtract | Move-Item -Destination $PythonDir -Force
     }
+    Remove-Item -Recurse -Force $tempExtract
     Remove-Item $zipPath -Force
 
     Write-Step "Python $PythonVersion pronto" Green
@@ -78,6 +81,9 @@ if (Test-Path $pthFile) {
         Set-Content -Path $pthFile -Value $content
         Write-Step "site-packages habilitado" Green
     }
+} else {
+    Write-Step "AVISO: python._pth nao encontrado, criando..." Yellow
+    Set-Content -Path $pthFile -Value "python312.zip`n.`nimport site" -Encoding ASCII
 }
 
 # ─── Step 3: Install pip ──────────────────────────────────────────────────────

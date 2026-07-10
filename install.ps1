@@ -103,7 +103,21 @@ try {
     } else {
         [System.Net.WebClient]::new().DownloadFile($pythonUrl, $pythonZip)
     }
-    Expand-Archive -Path $pythonZip -DestinationPath $PythonDir -Force
+
+    # Extrair para temp e achatar estrutura (evita subpastas)
+    $tempExtract = "$RuntimeDir\_py_extract"
+    New-Item -ItemType Directory -Force -Path $tempExtract | Out-Null
+    Expand-Archive -Path $pythonZip -DestinationPath $tempExtract -Force
+
+    # Se o zip contiver uma subpasta unica, achatar
+    $items = Get-ChildItem -Path $tempExtract
+    if ($items.Count -eq 1 -and $items[0].PSIsContainer) {
+        Get-ChildItem -Path $items[0].FullName | Move-Item -Destination $PythonDir -Force
+        Remove-Item -Recurse -Force $items[0].FullName
+    } else {
+        Get-ChildItem -Path $tempExtract | Move-Item -Destination $PythonDir -Force
+    }
+    Remove-Item -Recurse -Force $tempExtract
     Remove-Item $pythonZip -Force
 } catch {
     Write-Step "Falha ao baixar Python: $_" Red
@@ -112,10 +126,15 @@ try {
 
 # Habilita site-packages
 $pthFile = "$PythonDir\python._pth"
-$content = Get-Content $pthFile -Raw
-if ($content -notmatch '(?m)^import site$') {
-    $content = $content -replace '(?m)^#import site', 'import site'
-    Set-Content -Path $pthFile -Value $content
+if (Test-Path $pthFile) {
+    $content = Get-Content $pthFile -Raw
+    if ($content -notmatch '(?m)^import site$') {
+        $content = $content -replace '(?m)^#import site', 'import site'
+        Set-Content -Path $pthFile -Value $content
+    }
+} else {
+    Write-Step "AVISO: python._pth nao encontrado, criando..." Yellow
+    Set-Content -Path $pthFile -Value "python312.zip`n.`nimport site" -Encoding ASCII
 }
 Write-Step "Python $PythonVersion instalado" Green
 
