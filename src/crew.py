@@ -26,7 +26,7 @@ def df_to_markdown(df: pd.DataFrame) -> str:
         markdown_lines.append("| " + " | ".join(formatted_vals) + " |")
     return "\n".join(markdown_lines) + "\n"
 
-def montar_equipe_analise(caminho_fin: str, caminho_op: str, custos_fixos: float) -> Crew:
+def montar_equipe_analise(caminho_fin: str, caminho_op: str, custos_fixos: float, caminhos_opcionais: dict = None) -> Crew:
     # 1. Executar os calculos do motor matematico (Tools)
     margens_df = calcular_margem_contribuicao(caminho_fin)
     pe_dict = calcular_ponto_equilibrio(caminho_fin, custos_fixos)
@@ -54,14 +54,39 @@ def montar_equipe_analise(caminho_fin: str, caminho_op: str, custos_fixos: float
     
     output_operacional = df_to_markdown(desperdicios_df[["lote_id", "produto_id", "quantidade_produzida", "quantidade_refugada", "taxa_refugo_percentual", "horas_maquina_parada", "custo_refugo", "custo_parada_maquina", "perda_ineficiencia_total"]])
     
+    # 2b. Processar arquivos opcionais de enriquecimento
+    contexto_enriquecimento = ""
+    if caminhos_opcionais:
+        if "bom" in caminhos_opcionais and caminhos_opcionais["bom"]:
+            try:
+                bom_df = pd.read_csv(caminhos_opcionais["bom"]) if caminhos_opcionais["bom"].lower().endswith(".csv") else pd.read_excel(caminhos_opcionais["bom"])
+                contexto_enriquecimento += f"\n### Ficha Técnica / Estrutura de Produtos (BOM):\n{df_to_markdown(bom_df)}\n"
+            except Exception as e:
+                contexto_enriquecimento += f"\nErro ao ler Ficha Técnica (BOM): {e}\n"
+
+        if "budget" in caminhos_opcionais and caminhos_opcionais["budget"]:
+            try:
+                budget_df = pd.read_csv(caminhos_opcionais["budget"]) if caminhos_opcionais["budget"].lower().endswith(".csv") else pd.read_excel(caminhos_opcionais["budget"])
+                contexto_enriquecimento += f"\n### Orçamento e Metas Anuais (Budget vs Real):\n{df_to_markdown(budget_df)}\n"
+            except Exception as e:
+                contexto_enriquecimento += f"\nErro ao ler Orçamento: {e}\n"
+
+        if "observacoes" in caminhos_opcionais and caminhos_opcionais["observacoes"]:
+            try:
+                with open(caminhos_opcionais["observacoes"], "r", encoding="utf-8") as f:
+                    obs_text = f.read()
+                contexto_enriquecimento += f"\n### Observações Adicionais do Chão de Fábrica:\n{obs_text}\n"
+            except Exception as e:
+                contexto_enriquecimento += f"\nErro ao ler Observações: {e}\n"
+
     # 3. Instanciar agentes
     analista = criar_analista_financeiro()
     auditor = criar_auditor_processos()
     diretor = criar_diretor_controladoria()
     
-    # 4. Instanciar tarefas
-    t1 = criar_tarefa_financeira(analista, output_financeiro)
-    t2 = criar_tarefa_operacional(auditor, output_operacional)
+    # 4. Instanciar tarefas com contexto enriquecido
+    t1 = criar_tarefa_financeira(analista, output_financeiro + contexto_enriquecimento)
+    t2 = criar_tarefa_operacional(auditor, output_operacional + contexto_enriquecimento)
     t3 = criar_tarefa_diretoria(diretor)
     
     # 5. Montar a Crew

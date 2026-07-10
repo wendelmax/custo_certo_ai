@@ -63,6 +63,54 @@ def test_crew_kickoff():
     assert agent_calls[1] == ("Auditor", "task 2 desc", "\n### Output from Task 1 (Analista):\nResult from Analista\n")
 
 
+def test_montar_equipe_com_arquivos_opcionais(monkeypatch, tmp_path):
+    monkeypatch.setenv("OPENAI_API_KEY", "mock-key")
+    monkeypatch.setenv("GEMINI_API_KEY", "mock-key")
+
+    from custom_crew import Agent, Crew
+    calls = []
+    def mock_execute(self, task_description, context=""):
+        calls.append((self.role, task_description, context))
+        return f"Mock output for {self.role}"
+    monkeypatch.setattr(Agent, "execute", mock_execute)
+
+    from crew import montar_equipe_analise
+
+    caminho_fin = os.path.join(os.path.dirname(__file__), "../data/custos_financeiros.csv")
+    caminho_op = os.path.join(os.path.dirname(__file__), "../data/logs_operacionais.csv")
+
+    bom_file = tmp_path / "bom.csv"
+    bom_file.write_text("produto_id,material,quantidade\nPROD-001,Aco 50mm,2\nPROD-002,Ferro Fundido,1\n")
+
+    budget_file = tmp_path / "budget.csv"
+    budget_file.write_text("categoria,orçado,real\nMateria Prima,50000,52000\nMao de Obra,30000,28000\n")
+
+    obs_file = tmp_path / "observacoes.txt"
+    obs_file.write_text("Linha de producao A apresentou ruido no eixo principal.\nTurno noturno com 2 operarios ausentes.\n")
+
+    caminhos_opcionais = {
+        "bom": str(bom_file),
+        "budget": str(budget_file),
+        "observacoes": str(obs_file),
+    }
+
+    crew_instance = montar_equipe_analise(caminho_fin, caminho_op, 30000.0, caminhos_opcionais=caminhos_opcionais)
+
+    assert isinstance(crew_instance, Crew)
+    assert len(crew_instance.agents) == 3
+    assert len(crew_instance.tasks) == 3
+
+    assert "Ficha Técnica / Estrutura de Produtos (BOM)" in crew_instance.tasks[0].description
+    assert "Orçamento e Metas Anuais (Budget vs Real)" in crew_instance.tasks[0].description
+    assert "Observações Adicionais do Chão de Fábrica" in crew_instance.tasks[0].description
+
+    assert "Ficha Técnica / Estrutura de Produtos (BOM)" in crew_instance.tasks[1].description
+    assert "Orçamento e Metas Anuais (Budget vs Real)" in crew_instance.tasks[1].description
+    assert "Observações Adicionais do Chão de Fábrica" in crew_instance.tasks[1].description
+
+    crew_instance.kickoff()
+    assert len(calls) == 3
+
 def test_df_to_markdown():
     import numpy as np
     import pandas as pd
