@@ -189,8 +189,9 @@ if (-not $hasCredential) {
 
     $choice = $null
     do {
-        $input = Read-Host "  Escolha (1..$($Providers.Count + 1))"
-        $choice = [int]::TryParse($input, [ref]$choice) ? $choice : $null
+        $raw = Read-Host "  Escolha (1..$($Providers.Count + 1))"
+        $parsed = 0
+        if ([int]::TryParse($raw, [ref]$parsed)) { $choice = $parsed }
     } while ($null -eq $choice -or $choice -lt 1 -or $choice -gt $Providers.Count + 1)
 
     if ($choice -eq $Providers.Count + 1) {

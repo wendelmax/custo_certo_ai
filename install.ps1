@@ -205,8 +205,9 @@ if (-not $hasCredential) {
 
     $choice = $null
     do {
-        $input = Read-Host "  Escolha (1..$($Providers.Count + 1))"
-        $choice = [int]::TryParse($input, [ref]$choice) ? $choice : $null
+        $raw = Read-Host "  Escolha (1..$($Providers.Count + 1))"
+        $parsed = 0
+        if ([int]::TryParse($raw, [ref]$parsed)) { $choice = $parsed }
     } while ($null -eq $choice -or $choice -lt 1 -or $choice -gt $Providers.Count + 1)
 
     if ($choice -eq $Providers.Count + 1) {
@@ -258,17 +259,20 @@ $link.Description = "Custo Certo AI - Analise de Custos Industriais"
 $link.Save()
 Write-Step "Atalho criado na Area de Trabalho" Green
 
-# Start Menu shortcut
-$startMenu = "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Custo Certo AI"
-if (-not (Test-Path $startMenu)) {
+# Start Menu shortcut (user-level, sem precisar de admin)
+try {
+    $startMenu = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Custo Certo AI"
     New-Item -ItemType Directory -Force -Path $startMenu | Out-Null
+    $link2 = $shell.CreateShortcut("$startMenu\Custo Certo AI.lnk")
+    $link2.TargetPath = "powershell.exe"
+    $link2.Arguments = "-ExecutionPolicy Bypass -NoProfile -File `"$InstallDir\run.ps1`""
+    $link2.WorkingDirectory = $InstallDir
+    $link2.Description = "Custo Certo AI - Analise de Custos Industriais"
+    $link2.Save()
+    Write-Step "Atalho criado no Menu Iniciar" Green
+} catch {
+    Write-Step "AVISO: Nao foi possivel criar atalho no Menu Iniciar (sem permissao)" Yellow
 }
-$link2 = $shell.CreateShortcut("$startMenu\Custo Certo AI.lnk")
-$link2.TargetPath = "powershell.exe"
-$link2.Arguments = "-ExecutionPolicy Bypass -NoProfile -File `"$InstallDir\run.ps1`""
-$link2.WorkingDirectory = $InstallDir
-$link2.Description = "Custo Certo AI - Analise de Custos Industriais"
-$link2.Save()
 
 Write-Host ""
 Write-Host "  ╔═══════════════════════════════════════╗" -ForegroundColor Green
