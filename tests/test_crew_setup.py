@@ -111,6 +111,47 @@ def test_montar_equipe_com_arquivos_opcionais(monkeypatch, tmp_path):
     crew_instance.kickoff()
     assert len(calls) == 3
 
+def test_detect_openai_provider(monkeypatch):
+    from custom_crew import detect_openai_provider
+
+    # Sem nenhuma chave → None
+    for env in ["GROQ_API_KEY", "HYPER_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY"]:
+        monkeypatch.delenv(env, raising=False)
+    assert detect_openai_provider() is None
+
+    # GROQ_API_KEY → detecta base_url da Groq
+    monkeypatch.setenv("GROQ_API_KEY", "grok_test")
+    result = detect_openai_provider()
+    assert result["api_key"] == "grok_test"
+    assert "groq.com" in result["base_url"]
+    monkeypatch.delenv("GROQ_API_KEY")
+
+    # OPENAI_API_KEY sem base_url → None (usa default da lib)
+    monkeypatch.setenv("OPENAI_API_KEY", "openai_test")
+    result = detect_openai_provider()
+    assert result["api_key"] == "openai_test"
+    assert result["base_url"] is None
+    monkeypatch.delenv("OPENAI_API_KEY")
+
+    # HYPER_API_KEY com OPENAI_MODEL override
+    monkeypatch.setenv("HYPER_API_KEY", "hyper_test")
+    monkeypatch.setenv("OPENAI_MODEL", "hyperbee-1.0")
+    result = detect_openai_provider()
+    assert result["api_key"] == "hyper_test"
+    assert "hyper.charm.land" in result["base_url"]
+    assert result["model"] == "hyperbee-1.0"
+    monkeypatch.delenv("HYPER_API_KEY")
+    monkeypatch.delenv("OPENAI_MODEL")
+
+    # OPENAI_BASE_URL explicito sobrescreve deteccao
+    monkeypatch.setenv("GROQ_API_KEY", "custom_test")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://custom.api.com/v1")
+    result = detect_openai_provider()
+    assert result["base_url"] == "https://custom.api.com/v1"
+    monkeypatch.delenv("GROQ_API_KEY")
+    monkeypatch.delenv("OPENAI_BASE_URL")
+
+
 def test_df_to_markdown():
     import numpy as np
     import pandas as pd
