@@ -300,6 +300,18 @@
         </div>
       </div>
 
+      <!-- Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="theme-surface rounded-xl border theme-border shadow-sm p-5">
+          <h3 class="text-sm font-medium theme-text mb-4">Distribuição de Custos</h3>
+          <canvas id="chart-donut"></canvas>
+        </div>
+        <div class="theme-surface rounded-xl border theme-border shadow-sm p-5">
+          <h3 class="text-sm font-medium theme-text mb-4">Top Produtos por Margem</h3>
+          <canvas id="chart-bar"></canvas>
+        </div>
+      </div>
+
       <!-- Report -->
       <div class="theme-surface rounded-xl border theme-border shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b theme-border flex items-center justify-between flex-wrap gap-3">
@@ -330,9 +342,13 @@
     <p class="text-center text-xs theme-text-muted">Custo Certo AI &mdash; Plataforma de Análise de Custos Industriais</p>
   </footer>
 
+  <script src="/static/chart.umd.min.js"></script>
   <script>
     (function() {
       'use strict';
+
+      let chartDonut = null;
+      let chartBar = null;
 
       // ========================
       // THEME TOGGLE
@@ -502,6 +518,78 @@
         equilibrio.textContent = 'R$ ' + (kpis.ponto_equilibrio || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         margem.textContent = (kpis.margem_media || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
         refugo.textContent = 'R$ ' + (kpis.custo_refugo || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        renderCharts(kpis);
+      }
+
+      function renderCharts(kpis) {
+        const isDark = html.classList.contains('dark');
+        const textColor = isDark ? '#94a3b8' : '#475569';
+        const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+        // Donut chart
+        const ctxDonut = document.getElementById('chart-donut');
+        if (!ctxDonut) return;
+        if (chartDonut) chartDonut.destroy();
+        chartDonut = new Chart(ctxDonut, {
+          type: 'doughnut',
+          data: {
+            labels: ['Custo Variável', 'Custos Fixos', 'Custo de Refugo'],
+            datasets: [{
+              data: [
+                kpis.custo_variavel_total || 0,
+                kpis.custos_fixos || 0,
+                kpis.custo_refugo || 0
+              ],
+              backgroundColor: ['#6366f1', '#10b981', '#f59e0b'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: textColor, padding: 16, usePointStyle: true }
+              }
+            }
+          }
+        });
+
+        // Bar chart
+        const ctxBar = document.getElementById('chart-bar');
+        if (!ctxBar) return;
+        if (chartBar) chartBar.destroy();
+        const produtos = kpis.top_produtos || [];
+        chartBar = new Chart(ctxBar, {
+          type: 'bar',
+          data: {
+            labels: produtos.map(function(p) { return p.produto_id; }),
+            datasets: [{
+              label: 'Margem Total (R$)',
+              data: produtos.map(function(p) { return p.margem_contribuição_total; }),
+              backgroundColor: '#6366f1',
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: {
+                ticks: { color: textColor },
+                grid: { color: gridColor }
+              },
+              y: {
+                ticks: { color: textColor },
+                grid: { display: false }
+              }
+            }
+          }
+        });
       }
 
       function renderReport(htmlContent) {

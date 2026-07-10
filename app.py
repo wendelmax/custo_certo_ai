@@ -88,10 +88,20 @@ def analisar():
         import markdown
         html_resultado = markdown.markdown(resultado, extensions=['tables'])
 
+        top_produtos = margens_df.nlargest(5, 'margem_contribuição_total')[
+            ['produto_id', 'margem_contribuição_total']
+        ].to_dict(orient='records')
+
+        custo_variavel_total = float(margens_df['custo_variavel_unitario'].sum())
+        custo_refugo_total = float(desperdicios_df['custo_refugo'].sum()) if not desperdicios_df.empty else 0.0
+
         kpis = {
             'ponto_equilibrio': pe_dict.get('faturamento_equilibrio_geral', 0.0),
-            'margem_media': margens_df['margem_contribuição_unitaria'].mean(),
-            'custo_refugo': desperdicios_df['custo_refugo'].sum() if not desperdicios_df.empty else 0.0
+            'margem_media': float(margens_df['margem_contribuição_unitaria'].mean()),
+            'custo_refugo': custo_refugo_total,
+            'top_produtos': top_produtos,
+            'custo_variavel_total': custo_variavel_total,
+            'custos_fixos': custos_fixos
         }
 
         return jsonify({
