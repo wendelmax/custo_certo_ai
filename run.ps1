@@ -28,43 +28,52 @@ Write-Host ""
 
 # ─── Step 1: Check / Download Python ──────────────────────────────────────────
 
-$needPython = $ResetPython -or -not (Test-Path $PythonExe)
+$PythonExe = $null
+$PythonDir = Join-Path $RuntimeDir "python"
 
-if ($needPython) {
-    if (Test-Path $PythonDir) {
-        Remove-Item -Recurse -Force $PythonDir
-    }
+foreach ($cmd in @("python.exe", "python3.exe", "python")) {
+    $found = Get-Command $cmd -ErrorAction SilentlyContinue
+    if ($found) { $PythonExe = $found.Source; break }
+}
 
-    $url = "https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-embed-amd64.zip"
-    $zipPath = Join-Path $RuntimeDir "python.zip"
-
-    Write-Step "Baixando Python $PythonVersion (portatil)..." Yellow
-    New-Item -ItemType Directory -Force -Path $PythonDir | Out-Null
-
-    try {
-        if (Test-CommandAvailable "curl.exe") {
-            & curl.exe -sL $url -o $zipPath
-        } else {
-            [System.Net.WebClient]::new().DownloadFile($url, $zipPath)
-        }
-    } catch {
-        Write-Step "Falha ao baixar Python. Verifique sua conexao." Red
-        exit 1
-    }
-
-    Write-Step "Extraindo..." Yellow
-    Expand-Archive -Path $zipPath -DestinationPath $PythonDir -Force
-    $items = Get-ChildItem -Path $PythonDir
-    if ($items.Count -eq 1 -and $items[0].PSIsContainer) {
-        $sub = $items[0].FullName
-        Get-ChildItem -Path $sub | Move-Item -Destination $PythonDir -Force
-        Remove-Item -Recurse -Force $sub
-    }
-    Remove-Item $zipPath -Force
-
-    Write-Step "Python $PythonVersion pronto" Green
+if ($PythonExe -and -not $ResetPython) {
+    Write-Step "Python encontrado: $PythonExe" Green
 } else {
-    Write-Step "Python encontrado em $PythonDir" Green
+    # Tentar cache local primeiro
+    $cachedExe = Join-Path $PythonDir "python.exe"
+    if (Test-Path $cachedExe -and -not $ResetPython) {
+        $PythonExe = $cachedExe
+        Write-Step "Python em cache: $PythonExe" Green
+    } else {
+        Write-Step "Baixando Python $PythonVersion portatil..." Yellow
+        if (Test-Path $PythonDir) { Remove-Item -Recurse -Force $PythonDir }
+        New-Item -ItemType Directory -Force -Path $PythonDir | Out-Null
+
+        $url = "https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-embed-amd64.zip"
+        $zipPath = Join-Path $RuntimeDir "python.zip"
+
+        try {
+            if (Test-CommandAvailable "curl.exe") {
+                & curl.exe -sL $url -o $zipPath
+            } else {
+                [System.Net.WebClient]::new().DownloadFile($url, $zipPath)
+            }
+        } catch {
+            Write-Step "Falha ao baixar Python." Red
+            exit 1
+        }
+
+        Expand-Archive -Path $zipPath -DestinationPath $PythonDir -Force
+        $items = Get-ChildItem -Path $PythonDir
+        if ($items.Count -eq 1 -and $items[0].PSIsContainer) {
+            $sub = $items[0].FullName
+            Get-ChildItem -Path $sub | Move-Item -Destination $PythonDir -Force
+            Remove-Item -Recurse -Force $sub
+        }
+        Remove-Item $zipPath -Force
+        $PythonExe = $cachedExe
+        Write-Step "Python $PythonVersion instalado em $PythonDir" Green
+    }
 }
 
 # ─── Step 2: Enable site-packages ─────────────────────────────────────────────
