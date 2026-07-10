@@ -1,1 +1,536 @@
-<html><body></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR" class="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custo Certo AI — Análise de Custos Industriais</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; transition: background-color .3s, color .3s; }
+
+    :root {
+      --color-bg: #f1f5f9;
+      --color-surface: #ffffff;
+      --color-surface-hover: #f8fafc;
+      --color-text: #0f172a;
+      --color-text-secondary: #475569;
+      --color-text-muted: #94a3b8;
+      --color-border: #e2e8f0;
+      --color-border-hover: #cbd5e1;
+      --color-accent: #2563eb;
+      --color-accent-hover: #1d4ed8;
+      --color-accent-light: #eff6ff;
+      --color-success: #059669;
+      --color-success-bg: #ecfdf5;
+      --color-warning: #d97706;
+      --color-warning-bg: #fffbeb;
+      --color-danger: #dc2626;
+      --color-danger-bg: #fef2f2;
+      --color-header-bg: rgba(255,255,255,.8);
+      --color-dropzone: #f8fafc;
+      --color-dropzone-border: #cbd5e1;
+      --color-dropzone-hover: #eff6ff;
+      --color-dropzone-border-hover: #93c5fd;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
+    }
+
+    html.dark {
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-surface-hover: #334155;
+      --color-text: #f1f5f9;
+      --color-text-secondary: #94a3b8;
+      --color-text-muted: #64748b;
+      --color-border: #334155;
+      --color-border-hover: #475569;
+      --color-accent: #3b82f6;
+      --color-accent-hover: #60a5fa;
+      --color-accent-light: #1e3a5f;
+      --color-success: #34d399;
+      --color-success-bg: #064e3b;
+      --color-warning: #fbbf24;
+      --color-warning-bg: #78350f;
+      --color-danger: #f87171;
+      --color-danger-bg: #7f1d1d;
+      --color-header-bg: rgba(15,23,42,.8);
+      --color-dropzone: #1e293b;
+      --color-dropzone-border: #475569;
+      --color-dropzone-hover: #1e3a5f;
+      --color-dropzone-border-hover: #3b82f6;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+      --shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,.4), 0 2px 4px -2px rgba(0,0,0,.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.5), 0 4px 6px -4px rgba(0,0,0,.4);
+    }
+
+    body { background: var(--color-bg); color: var(--color-text); }
+
+    .theme-surface { background: var(--color-surface); }
+    .theme-surface-hover:hover { background: var(--color-surface-hover); }
+    .theme-text { color: var(--color-text); }
+    .theme-text-secondary { color: var(--color-text-secondary); }
+    .theme-text-muted { color: var(--color-text-muted); }
+    .theme-border { border-color: var(--color-border); }
+    .theme-border-hover:hover { border-color: var(--color-border-hover); }
+    .theme-accent { color: var(--color-accent); }
+    .theme-accent-bg { background: var(--color-accent); }
+    .theme-accent-bg-hover:hover { background: var(--color-accent-hover); }
+    .theme-accent-light-bg { background: var(--color-accent-light); }
+    .theme-header-bg { background: var(--color-header-bg); }
+
+    .dropzone { background: var(--color-dropzone); border-color: var(--color-dropzone-border); border-style: dashed; transition: all .2s; }
+    .dropzone:hover, .dropzone.dragover { background: var(--color-dropzone-hover); border-color: var(--color-dropzone-border-hover); }
+
+    .kpi-card { background: var(--color-surface); border: 1px solid var(--color-border); box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s; }
+    .kpi-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+    .slide-in { animation: slideIn .4s ease-out both; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    .spinner { width: 20px; height: 20px; border: 2.5px solid var(--color-border); border-top-color: var(--color-accent); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #relatorio-conteudo h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-text); }
+    #relatorio-conteudo h2 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .75rem; color: var(--color-text); }
+    #relatorio-conteudo h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: .5rem; }
+    #relatorio-conteudo p { margin-bottom: .75rem; line-height: 1.625; }
+    #relatorio-conteudo table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    #relatorio-conteudo th, #relatorio-conteudo td { padding: .625rem .75rem; border: 1px solid var(--color-border); text-align: left; }
+    #relatorio-conteudo th { background: var(--color-accent-light); font-weight: 600; font-size: .875rem; }
+    #relatorio-conteudo ul, #relatorio-conteudo ol { padding-left: 1.5rem; margin-bottom: .75rem; }
+    #relatorio-conteudo li { margin-bottom: .25rem; }
+    #relatorio-conteudo blockquote { border-left: 3px solid var(--color-accent); padding-left: 1rem; margin: 1rem 0; color: var(--color-text-secondary); }
+
+    input[type="file"]::file-selector-button { background: var(--color-accent); color: #fff; border: none; padding: .375rem .75rem; border-radius: .375rem; font-size: .8125rem; cursor: pointer; transition: background .2s; }
+    input[type="file"]::file-selector-button:hover { background: var(--color-accent-hover); }
+
+    input[type="number"] { -moz-appearance: textfield; }
+    input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    .file-chip { display: inline-flex; align-items: center; gap: .375rem; padding: .25rem .625rem; background: var(--color-accent-light); border-radius: 9999px; font-size: .8125rem; color: var(--color-accent); border: 1px solid var(--color-border); margin-top: .5rem; }
+    .file-chip button { background: none; border: none; cursor: pointer; color: var(--color-text-muted); font-size: 1rem; line-height: 1; padding: 0; display: inline-flex; }
+    .file-chip button:hover { color: var(--color-danger); }
+
+    #results { display: none; }
+    #results.visible { display: block; }
+
+    .btn-download { display: inline-flex; align-items: center; gap: .5rem; padding: .625rem 1.25rem; border-radius: .5rem; font-weight: 500; font-size: .875rem; transition: all .2s; cursor: pointer; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+    .btn-download:hover { background: var(--color-surface-hover); border-color: var(--color-border-hover); box-shadow: var(--shadow-sm); }
+    .btn-download svg { width: 18px; height: 18px; }
+
+    .error-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--color-danger-bg); color: var(--color-danger); border: 1px solid var(--color-danger); padding: .875rem 1.25rem; border-radius: .5rem; font-size: .875rem; font-weight: 500; box-shadow: var(--shadow-lg); z-index: 100; animation: slideIn .3s ease-out; max-width: 24rem; }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="theme-header-bg sticky top-0 z-50 border-b theme-border" style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg theme-accent-bg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold theme-text">Custo Certo AI</h1>
+            <p class="text-xs theme-text-muted -mt-0.5">Controladoria &amp; Análise de Custos</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <span class="text-sm theme-text-muted hidden sm:inline">Tema</span>
+          <button id="theme-toggle" class="relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-accent)]" style="background: var(--color-border);" aria-label="Alternar tema">
+            <span id="theme-thumb" class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 flex items-center justify-center">
+              <svg id="theme-icon" class="w-3 h-3" style="color: #f59e0b;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- ==================== FORM SECTION ==================== -->
+    <section id="form-section" class="theme-surface rounded-xl border theme-border shadow-sm p-6 sm:p-8 mb-8">
+      <div class="flex items-center gap-2 mb-6">
+        <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <h2 class="text-xl font-semibold theme-text">Upload de Dados</h2>
+      </div>
+
+      <form id="analise-form" enctype="multipart/form-data">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Financeiro (required) -->
+          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-financeiro">
+            <div class="flex flex-col items-center text-center gap-2">
+              <svg class="w-8 h-8 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <p class="text-sm font-medium theme-text">Dados Financeiros <span class="theme-text-secondary font-normal">(CSV)</span></p>
+              <p class="text-xs theme-text-muted">Arraste o arquivo ou clique para selecionar</p>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-danger-bg); color: var(--color-danger);">Obrigatório</span>
+            </div>
+            <input type="file" id="file_financeiro" name="file_financeiro" accept=".csv" class="hidden" required>
+            <div class="file-list mt-3" id="file-list-financeiro"></div>
+          </div>
+
+          <!-- Operacional (required) -->
+          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-operacional">
+            <div class="flex flex-col items-center text-center gap-2">
+              <svg class="w-8 h-8 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <p class="text-sm font-medium theme-text">Logs Operacionais <span class="theme-text-secondary font-normal">(CSV)</span></p>
+              <p class="text-xs theme-text-muted">Arraste o arquivo ou clique para selecionar</p>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-danger-bg); color: var(--color-danger);">Obrigatório</span>
+            </div>
+            <input type="file" id="file_operacional" name="file_operacional" accept=".csv" class="hidden" required>
+            <div class="file-list mt-3" id="file-list-operacional"></div>
+          </div>
+
+          <!-- BOM (optional) -->
+          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-bom">
+            <div class="flex flex-col items-center text-center gap-2">
+              <svg class="w-8 h-8 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              <p class="text-sm font-medium theme-text">BOM / Ficha Técnica</p>
+              <p class="text-xs theme-text-muted">CSV ou Excel · Opcional</p>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-warning-bg); color: var(--color-warning);">Opcional</span>
+            </div>
+            <input type="file" id="bom" name="bom" accept=".csv,.xls,.xlsx" class="hidden">
+            <div class="file-list mt-3" id="file-list-bom"></div>
+          </div>
+
+          <!-- Budget (optional) -->
+          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-budget">
+            <div class="flex flex-col items-center text-center gap-2">
+              <svg class="w-8 h-8 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p class="text-sm font-medium theme-text">Budget / Orçamento</p>
+              <p class="text-xs theme-text-muted">CSV ou Excel · Opcional</p>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-warning-bg); color: var(--color-warning);">Opcional</span>
+            </div>
+            <input type="file" id="budget" name="budget" accept=".csv,.xls,.xlsx" class="hidden">
+            <div class="file-list mt-3" id="file-list-budget"></div>
+          </div>
+
+        </div>
+
+        <!-- Observações -->
+        <div class="mt-6">
+          <div class="dropzone rounded-lg border-2 p-5 cursor-pointer" id="drop-observacoes" style="max-width: 100%;">
+            <div class="flex items-center gap-3">
+              <svg class="w-6 h-6 theme-text-muted flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium theme-text">Observações / Shift Notes <span class="theme-text-secondary font-normal">(TXT)</span></p>
+                <p class="text-xs theme-text-muted">Arraste ou clique para selecionar · Opcional</p>
+              </div>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--color-warning-bg); color: var(--color-warning);">Opcional</span>
+            </div>
+            <input type="file" id="observacoes" name="observacoes" accept=".txt" class="hidden">
+            <div class="file-list mt-2" id="file-list-observacoes"></div>
+          </div>
+        </div>
+
+        <!-- Custos Fixos -->
+        <div class="mt-6">
+          <label for="custos_fixos" class="block text-sm font-medium theme-text mb-1.5">Custos Fixos (R$)</label>
+          <div class="relative max-w-xs">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-sm theme-text-muted">R$</span>
+            <input type="number" id="custos_fixos" name="custos_fixos" step="0.01" min="0" value="30000.00"
+                   class="block w-full pl-9 pr-4 py-2.5 rounded-lg border theme-border theme-surface theme-text text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-shadow">
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="mt-8 flex flex-col sm:flex-row items-center gap-4">
+          <button type="submit" id="btn-analisar"
+                  class="theme-accent-bg theme-accent-bg-hover text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-accent)] disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2 text-base">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <span id="btn-text">Analisar</span>
+            <span id="btn-spinner" class="hidden"><span class="spinner"></span></span>
+          </button>
+          <p id="form-status" class="text-sm theme-text-secondary"></p>
+        </div>
+      </form>
+    </section>
+
+    <!-- ==================== RESULTS SECTION ==================== -->
+    <section id="results" class="space-y-8">
+
+      <!-- KPI Dashboard -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="kpi-grid">
+        <!-- Ponto de Equilíbrio -->
+        <div class="kpi-card rounded-xl p-5 slide-in" style="animation-delay: 0s;">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium theme-text-secondary">Ponto de Equilíbrio</span>
+            <span class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--color-accent-light);">
+              <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </span>
+          </div>
+          <p class="text-2xl font-bold theme-text" id="kpi-equilibrio">—</p>
+          <p class="text-xs theme-text-muted mt-1">Faturamento mínimo necessário</p>
+        </div>
+
+        <!-- Margem Média -->
+        <div class="kpi-card rounded-xl p-5 slide-in" style="animation-delay: .1s;">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium theme-text-secondary">Margem Média</span>
+            <span class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--color-success-bg);">
+              <svg class="w-5 h-5" style="color: var(--color-success);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </span>
+          </div>
+          <p class="text-2xl font-bold theme-text" id="kpi-margem">—</p>
+          <p class="text-xs theme-text-muted mt-1">Margem de contribuição média</p>
+        </div>
+
+        <!-- Custo de Refugo -->
+        <div class="kpi-card rounded-xl p-5 slide-in" style="animation-delay: .2s;">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium theme-text-secondary">Custo de Refugo</span>
+            <span class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--color-warning-bg);">
+              <svg class="w-5 h-5" style="color: var(--color-warning);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            </span>
+          </div>
+          <p class="text-2xl font-bold theme-text" id="kpi-refugo">—</p>
+          <p class="text-xs theme-text-muted mt-1">Custo total de desperdícios</p>
+        </div>
+      </div>
+
+      <!-- Report -->
+      <div class="theme-surface rounded-xl border theme-border shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b theme-border flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 theme-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <h3 class="text-lg font-semibold theme-text">Relatório de Análise</h3>
+          </div>
+          <div class="flex gap-2">
+            <a href="/download/excel" class="btn-download" id="btn-download-excel">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Download Excel
+            </a>
+            <a href="/download/html" class="btn-download" id="btn-download-html">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Download HTML
+            </a>
+          </div>
+        </div>
+        <div class="p-6" id="relatorio-conteudo">
+          <p class="theme-text-secondary text-sm italic">Após a análise, o relatório completo aparecerá aqui.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="border-t theme-border mt-12 py-6">
+    <p class="text-center text-xs theme-text-muted">Custo Certo AI &mdash; Plataforma de Análise de Custos Industriais</p>
+  </footer>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // ========================
+      // THEME TOGGLE
+      // ========================
+      const html = document.documentElement;
+      const toggleBtn = document.getElementById('theme-toggle');
+      const thumb = document.getElementById('theme-thumb');
+      const icon = document.getElementById('theme-icon');
+
+      function getPreferredTheme() {
+        const stored = localStorage.getItem('theme');
+        if (stored) return stored;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      function setTheme(theme) {
+        if (theme === 'dark') {
+          html.classList.add('dark');
+          thumb.style.transform = 'translateX(24px)';
+          icon.innerHTML = '<path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>';
+          icon.style.color = '#f59e0b';
+        } else {
+          html.classList.remove('dark');
+          thumb.style.transform = 'translateX(0)';
+          icon.innerHTML = '<path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>';
+          icon.style.color = '#f59e0b';
+        }
+        localStorage.setItem('theme', theme);
+      }
+
+      setTheme(getPreferredTheme());
+
+      toggleBtn.addEventListener('click', function() {
+        setTheme(html.classList.contains('dark') ? 'light' : 'dark');
+      });
+
+      // ========================
+      // DRAG & DROP
+      // ========================
+      const dropZones = document.querySelectorAll('.dropzone');
+      dropZones.forEach(zone => {
+        const input = zone.querySelector('input[type="file"]');
+        const fileList = zone.querySelector('.file-list');
+
+        // Click to open file picker
+        zone.addEventListener('click', function(e) {
+          if (e.target.closest('.file-chip button')) return;
+          input.click();
+        });
+
+        input.addEventListener('change', function() {
+          updateFileChips(input, fileList);
+        });
+
+        // Drag events
+        ['dragenter', 'dragover'].forEach(evt => {
+          zone.addEventListener(evt, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            zone.classList.add('dragover');
+          });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+          zone.addEventListener(evt, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            zone.classList.remove('dragover');
+          });
+        });
+        zone.addEventListener('drop', function(e) {
+          const files = e.dataTransfer.files;
+          if (files.length) {
+            input.files = files;
+            updateFileChips(input, fileList);
+          }
+        });
+      });
+
+      function updateFileChips(input, container) {
+        container.innerHTML = '';
+        const files = input.files;
+        if (!files || !files.length) return;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          const chip = document.createElement('span');
+          chip.className = 'file-chip';
+          chip.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'
+            + '<span>' + escapeHtml(f.name) + '</span>'
+            + '<button type="button" data-input="' + escapeHtml(input.id) + '" aria-label="Remover arquivo">&times;</button>';
+          container.appendChild(chip);
+          chip.querySelector('button').addEventListener('click', function(e) {
+            e.stopPropagation();
+            input.value = '';
+            container.innerHTML = '';
+          });
+        }
+      }
+
+      // ========================
+      // FORM SUBMISSION
+      // ========================
+      const form = document.getElementById('analise-form');
+      const btn = document.getElementById('btn-analisar');
+      const btnText = document.getElementById('btn-text');
+      const btnSpinner = document.getElementById('btn-spinner');
+      const formStatus = document.getElementById('form-status');
+      const resultsSection = document.getElementById('results');
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Validate required files
+        const finInput = document.getElementById('file_financeiro');
+        const opInput = document.getElementById('file_operacional');
+        if (!finInput.files || !finInput.files.length) {
+          showError('Selecione o arquivo de Dados Financeiros (obrigatório).');
+          return;
+        }
+        if (!opInput.files || !opInput.files.length) {
+          showError('Selecione o arquivo de Logs Operacionais (obrigatório).');
+          return;
+        }
+
+        // Disable button, show spinner
+        btn.disabled = true;
+        btnText.textContent = 'Analisando...';
+        btnSpinner.classList.remove('hidden');
+        formStatus.textContent = 'Processando dados...';
+        resultsSection.classList.remove('visible');
+        resultsSection.style.display = 'none';
+
+        const fd = new FormData(form);
+
+        try {
+          const res = await fetch('/analisar', { method: 'POST', body: fd });
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || 'Erro na análise');
+          }
+
+          if (data.success) {
+            renderKPIs(data.kpis);
+            renderReport(data.relatorio_html);
+            resultsSection.style.display = 'block';
+            setTimeout(() => resultsSection.classList.add('visible'), 50);
+            formStatus.textContent = 'Análise concluída com sucesso!';
+            formStatus.style.color = 'var(--color-success)';
+          } else {
+            throw new Error(data.error || 'Resposta inesperada do servidor');
+          }
+        } catch (err) {
+          showError(err.message);
+          formStatus.textContent = '';
+        } finally {
+          btn.disabled = false;
+          btnText.textContent = 'Analisar';
+          btnSpinner.classList.add('hidden');
+        }
+      });
+
+      function renderKPIs(kpis) {
+        const equilibrio = document.getElementById('kpi-equilibrio');
+        const margem = document.getElementById('kpi-margem');
+        const refugo = document.getElementById('kpi-refugo');
+
+        equilibrio.textContent = 'R$ ' + (kpis.ponto_equilibrio || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        margem.textContent = (kpis.margem_media || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+        refugo.textContent = 'R$ ' + (kpis.custo_refugo || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      function renderReport(htmlContent) {
+        const container = document.getElementById('relatorio-conteudo');
+        if (htmlContent && htmlContent.trim()) {
+          container.innerHTML = htmlContent;
+        } else {
+          container.innerHTML = '<p class="theme-text-secondary text-sm italic">Nenhum relatório disponível.</p>';
+        }
+      }
+
+      function showError(msg) {
+        const existing = document.querySelector('.error-toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = 'error-toast';
+        toast.innerHTML = '<div class="flex items-center gap-2"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>' + escapeHtml(msg) + '</span></div>';
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; setTimeout(() => toast.remove(), 300); }, 5000);
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+    })();
+  </script>
+
+</body>
+</html>
