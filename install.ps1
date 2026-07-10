@@ -26,7 +26,7 @@ $Providers = @(
     @{ Name = "Moonshot";              Env = "MOONSHOT_API_KEY";           Tier = "PAGO";       Url = "https://platform.moonshot.cn/" }
     @{ Name = "DeepSeek (Alibaba SG)"; Env = "ALIBABA_SINGAPORE_API_KEY";  Tier = "PAGO";       Url = "https://www.alibabacloud.com/" }
     @{ Name = "MiniMax";               Env = "MINIMAX_API_KEY";            Tier = "PAGO";       Url = "https://platform.minimaxi.com/" }
-    @{ Name = "Hyper";                 Env = "HYPER_API_KEY";              Tier = "PAGO";       Url = "https://hyper.xyz/" }
+    @{ Name = "Hyper (Charm)";         Env = "HYPER_API_KEY";              Tier = "GRATIS+PAGO"; Url = "https://hyper.charm.land/" }
     @{ Name = "Vercel AI Gateway";     Env = "VERCEL_API_KEY";             Tier = "GRATIS+PAGO"; Url = "https://vercel.com/" }
     @{ Name = "io.net";                Env = "IONET_API_KEY";              Tier = "PAGO";       Url = "https://io.net/" }
     @{ Name = "OpenCode Zen & Go";     Env = "OPENCODE_API_KEY";           Tier = "PAGO";       Url = "https://opencode.ai/" }
